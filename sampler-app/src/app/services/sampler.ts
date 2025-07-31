@@ -17,7 +17,7 @@ export interface Sampler{
   providedIn: 'root'
 })
 export class SamplerService {
-    private mockUrl = 'assets/mock/sampler.json'; //URL del mock de datos 
+    private mockUrl = 'assets/mock-sampler.json'; //URL del mock de datos 
 
     constructor(private http: HttpClient) { } //Inyectamos HttpClient en el constructor
 

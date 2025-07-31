@@ -1,0 +1,8 @@
+<div *ngFor="let sample of samplers" class="sample-card">
+  <h3>{{ sample.titulo }}</h3>
+  <p><strong>Artista:</strong> {{ sample.artista }}</p>
+  <p><strong>Fuente:</strong> {{ sample.fuente }}</p>
+  <a [href]="sample.enlace" target="_blank">Ver en {{ sample.fuente }}</a>
+  <p *ngIf="sample.descripcion"><em>{{ sample.descripcion }}</em></p>
+  <hr>
+</div>

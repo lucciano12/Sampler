@@ -1,0 +1,17 @@
+{
+  "samplers": [
+    {
+      "titulo": "Las Simples Cosas",
+      "artista": "Macha y El Bloque Depresivo Oficial",
+      "fuente": "YouTube",
+      "enlace": "https://www.youtube.com/watch?v=ZCr7hDnVbuI&list=RDZCr7hDnVbuI&start_radio=1",
+      "descripcion": "@SatoMoon11: 'Uno vuelve siempre, a los viejos sitios, donde amó la vida. Simplemente, no puede ser más cierto.'"
+    },
+    {
+      "titulo": "Violent Crimes",
+      "artista": "Kanye West",
+      "fuente": "Spotify",
+      "enlace": "https://open.spotify.com/intl-es/track/3s7MCdXyWmwjdcWh7GWXas?si=c744331685434d0a"
+    }
+  ]
+}

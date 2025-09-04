@@ -5,36 +5,31 @@ Esta API facilitara la busqueda del sample que quisieras buscar mediante su gene
 
 Diagrama "Lista de Samplers"
 
+## Diagrama "Lista de Samplers"
+
 ```mermaid
-
 flowchart TD
-  A[Arranque componente (ngOnInit)] --> B[Cargar datos: samplerService.getSamplers()]
-  B -->|next: { samplers }| C[Guardar datos]
-  C --> C1[ this.samplers = samplers ]
-  C1 --> C2[ this.filtered = samplers ]
-  B -->|error| D[ errorMsg = 'No pude cargar...' ]
+  A[ngOnInit] --> B[Cargar datos del servicio]
+  B --> C[Asignar this.samplers y this.filtered]
+  B --> D[Error -> errorMsg]
 
-  A --> E[Configurar formulario]
-  E --> E1[q.valueChanges | debounceTime(200)]
-  E --> E2[fuente.valueChanges]
-  E1 --> F[applyFilter()]
-  E2 --> F[applyFilter()]
+  A --> E[Configurar formularios]
+  E --> F[Escuchar q.valueChanges]
+  E --> G[Escuchar fuente.valueChanges]
+  F --> H[applyFilter]
+  G --> H[applyFilter]
 
-  F --> G[term = normalize(q.value)]
-  G --> H{fuente === 'todas'?}
-  H -- Sí --> I[base = samplers]
-  H -- No --> J[base = samplers.filter por fuente]
+  H --> I{fuente es todas?}
+  I -- Si --> J[base = samplers]
+  I -- No --> K[base = samplers filtrados por fuente]
 
-  I --> K{term vacío?}
-  J --> K{term vacío?}
+  H --> L{term vacio?}
+  L -- Si --> M[filtered = base]
+  L -- No --> N[Calcular score: titulo x3 - artista x2 - fuente/desc x1]
+  N --> O[Filtrar score > 0 y ordenar desc]
+  O --> P[filtered = resultado]
 
-  K -- Sí --> L[filtered = base]
-  K -- No --> M[calcular score por coincidencia]
-  M --> N[filtrar score>0 y ordenar desc]
-  N --> O[filtered = resultado]
-
-  %% Leyenda funciones
   subgraph Utilidades
-    U1[normalize(str): minúsculas+sin acentos]
-    U2[scoreSampler(s, term): título=3x, artista=2x, desc/fuente=1x]
+    U1[normalize -> minusculas sin acentos]
+    U2[scoreSampler]
   end

@@ -55,5 +55,44 @@ export class ListaSamplers implements OnInit{ //El OnInit es un ciclo de vida de
       : this.samplers.filter(s => s.fuente.toLowerCase() === fuente.toLowerCase()); //Si no, filtramos por la fuente seleccionada ( : significa "si no")
 
     //2) Si no hay término de búsqueda, devolvemos la base filtrada por fuente
+    if (!term) {  // Si el término de búsqueda está vacío
+      this.filtered = base; //Asignamos la base filtrada por fuente al array de samplers filtrados
+      return; //Lo retornamos
+    }
+
+    //3) Filtrar por coincidencia en titulo, artista, fuente o descripción del sampler
+     this.filtered = base
+      .map(s => (
+        {
+         s, score: scoreSampler(s, term)  // El s es el sampler, y score es la puntuación de coincidencia
+        }
+      )) // calcular “relevancia”
+      .filter(x => x.score > 0)                         // descartar no coincidentes 
+      .sort((a, b) => b.score - a.score)               // ordenar por relevancia
+      .map(x => x.s);                                  // devolver solo el sampler
   }
+}
+
+//Función para normalizar un texto (quitar tildes y pasar a minúsculas)
+function normalize(v: string | undefined | null): string {
+  return (v ?? '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/\p{Diacritic}+/gu, '')
+    .trim();
+}
+
+/** Sencillo scoring por relevancia: título (3x), artista (2x), descripción/fuente (1x) */
+function scoreSampler(s: Sampler, term: string): number {
+  const titulo = normalize(s.titulo);
+  const artista = normalize(s.artista);
+  const fuente = normalize(s.fuente);
+  const desc = normalize(s.descripcion);
+
+  let score = 0;
+  if (titulo.includes(term)) score += 3;
+  if (artista.includes(term)) score += 2;
+  if (fuente.includes(term)) score += 1;
+  if (desc.includes(term)) score += 1;
+  return score;
 }

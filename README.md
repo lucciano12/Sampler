@@ -5,6 +5,9 @@ Esta API facilitara la busqueda del sample que quisieras buscar mediante su gene
 
 Diagrama "Lista de Samplers"
 
+## Diagrama "Lista de Samplers"
+
+```mermaid
 flowchart TD
   A[ngOnInit] --> B[Cargar datos del servicio]
   B --> C[Asignar this.samplers y this.filtered]

@@ -25,7 +25,7 @@ flowchart TD
 
   H --> L{term vacio?}
   L -- Si --> M[filtered = base]
-  L -- No --> N[Calcular score: titulo 3x, artista 2x,\nfuente/desc 1x]
+  L -- No --> N[Calcular score: titulo x3 - artista x2 - fuente/desc x1]
   N --> O[Filtrar score > 0 y ordenar desc]
   O --> P[filtered = resultado]
 

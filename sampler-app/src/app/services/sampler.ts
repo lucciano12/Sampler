@@ -17,12 +17,12 @@ export interface Sampler{
   providedIn: 'root'
 })
 export class SamplerService {
-    private mockUrl = 'assets/mock-sampler.json'; //URL del mock de datos 
+    private mockUrl = 'assets/mock/samplers.json'; //Ruta del mock JSON que contiene los datos del sampler
 
     constructor(private http: HttpClient) { } //Inyectamos HttpClient en el constructor
 
     //Método para obtener los datos del sampler
-    getSampler(): Observable<Sampler[]> {
-        return this.http.get<Sampler[]>(this.mockUrl); //Realizamos una petición GET al mock y devolvemos un Observable de tipo Sampler[]
+    getSampler(): Observable< {samplers: Sampler[]}> { //Devolvemos un Observable que emite un objeto con un array de samplers
+        return this.http.get<{samplers:Sampler[]}>(this.mockUrl); //Realizamos una petición GET al mock y devolvemos un Observable de tipo Sampler[]
     }
 }

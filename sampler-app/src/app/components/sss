@@ -1,0 +1,91 @@
+import { Component, OnInit } from '@angular/core';
+import { NgFor, NgIf } from '@angular/common';
+import { ReactiveFormsModule, FormControl } from '@angular/forms';
+import { debounceTime } from 'rxjs/operators';
+import { SamplerService, Sampler } from '../../services/sampler';
+
+@Component({
+  selector: 'app-lista-samplers',
+  standalone: true,
+  imports: [NgFor, NgIf, ReactiveFormsModule],
+  templateUrl: './lista-samplers.html',
+  styleUrl: './lista-samplers.scss'
+})
+export class ListaSamplers implements OnInit {
+  // datos
+  samplers: Sampler[] = [];
+  filtered: Sampler[] = [];
+
+  // controles de búsqueda y filtro por fuente
+  q = new FormControl<string>('', { nonNullable: true });
+  fuente = new FormControl<string>('todas', { nonNullable: true });
+
+  loading = false;
+  errorMsg = '';
+
+  constructor(private samplerService: SamplerService) {}
+
+  ngOnInit() {
+    this.loading = true;
+    this.samplerService.getSamplers().subscribe({
+      next: ({ samplers }) => {
+        this.samplers = samplers;
+        this.filtered = samplers;
+        this.loading = false;
+      },
+      error: (e) => {
+        this.errorMsg = 'No pude cargar los samples del mock.';
+        this.loading = false;
+        console.error(e);
+      }
+    });
+
+    // reaccionar a cambios de búsqueda y fuente
+    this.q.valueChanges.pipe(debounceTime(200)).subscribe(() => this.applyFilter());
+    this.fuente.valueChanges.subscribe(() => this.applyFilter());
+  }
+
+  private applyFilter() {
+    const term = normalize(this.q.value);
+    const fuente = this.fuente.value; // 'todas' | 'YouTube' | 'Spotify'
+
+    // 1) filtrar por fuente (si corresponde)
+    let base = fuente === 'todas'
+      ? this.samplers
+      : this.samplers.filter(s => s.fuente.toLowerCase() === fuente.toLowerCase());
+
+    // 2) si no hay término, devolvemos base
+    if (!term) { this.filtered = base; return; }
+
+    // 3) filtrar por coincidencia en título, artista, fuente o descripción (insensible a acentos)
+    this.filtered = base
+      .map(s => ({ s, score: scoreSampler(s, term) })) // calcular “relevancia”
+      .filter(x => x.score > 0)                         // descartar no coincidentes
+      .sort((a, b) => b.score - a.score)               // ordenar por relevancia
+      .map(x => x.s);                                  // devolver solo el sampler
+  }
+}
+
+/** Normaliza strings: minúsculas + sin acentos/diacríticos */
+function normalize(v: string | undefined | null): string {
+  return (v ?? '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/\p{Diacritic}+/gu, '')
+    .trim();
+}
+
+/** Sencillo scoring por relevancia: título (3x), artista (2x), descripción/fuente (1x) */
+function scoreSampler(s: Sampler, term: string): number {
+  const titulo = normalize(s.titulo);
+  const artista = normalize(s.artista);
+  const fuente = normalize(s.fuente);
+  const desc = normalize(s.descripcion);
+
+  let score = 0;
+  if (titulo.includes(term)) score += 3;
+  if (artista.includes(term)) score += 2;
+  if (fuente.includes(term)) score += 1;
+  if (desc.includes(term)) score += 1;
+  return score;
+}

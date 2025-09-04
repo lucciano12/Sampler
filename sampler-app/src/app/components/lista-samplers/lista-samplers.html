@@ -1,8 +1,8 @@
-<div *ngFor="let sample of samplers" class="sample-card">
-  <h3>{{ sample.titulo }}</h3>
-  <p><strong>Artista:</strong> {{ sample.artista }}</p>
-  <p><strong>Fuente:</strong> {{ sample.fuente }}</p>
-  <a [href]="sample.enlace" target="_blank">Ver en {{ sample.fuente }}</a>
-  <p *ngIf="sample.descripcion"><em>{{ sample.descripcion }}</em></p>
+<p>¡Componente lista-samplers cargado!</p>
+<div *ngFor="let sampler of samplers">
+  <h3>{{ sampler.titulo }}</h3>
+  <p>{{ sampler.artista }}</p>
+  <a [href]="sampler.enlace" target="_blank">{{ sampler.fuente }}</a>
+  <p *ngIf="sampler.descripcion">{{ sampler.descripcion }}</p>
   <hr>
 </div>

@@ -19,7 +19,7 @@ flowchart TD
   F --> H[applyFilter]
   G --> H[applyFilter]
 
-  H --> I{fuente es "todas"?}
+  H --> I{fuente es todas?}
   I -- Si --> J[base = samplers]
   I -- No --> K[base = samplers filtrados por fuente]
 

@@ -1,8 +1,29 @@
-<p>¡Componente lista-samplers cargado!</p>
-<div *ngFor="let sampler of samplers">
-  <h3>{{ sampler.titulo }}</h3>
-  <p>{{ sampler.artista }}</p>
-  <a [href]="sampler.enlace" target="_blank">{{ sampler.fuente }}</a>
-  <p *ngIf="sampler.descripcion">{{ sampler.descripcion }}</p>
+<h2>Sampler</h2>
+
+<div class="toolbar">
+  <input
+    type="search"
+    [formControl]="q"
+    placeholder="Busca por título, artista, fuente o descripción…"
+    aria-label="Buscar sampler"
+  />
+
+  <select [formControl]="fuente" aria-label="Filtrar por fuente">
+    <option value="todas">Todas</option>
+    <option value="YouTube">YouTube</option>
+    <option value="Spotify">Spotify</option>
+  </select>
+</div>
+
+<p *ngIf="loading">Cargando…</p>
+<p *ngIf="!loading && errorMsg">{{ errorMsg }}</p>
+<p *ngIf="!loading && !errorMsg && filtered.length === 0"><em>Sin resultados</em></p>
+
+<div *ngFor="let s of filtered" class="card">
+  <h3>{{ s.titulo }}</h3>
+  <p class="muted">{{ s.artista }}</p>
+  <p><strong>Fuente:</strong> {{ s.fuente }}</p>
+  <p><a [href]="s.enlace" target="_blank" rel="noopener">Abrir enlace</a></p>
+  <p *ngIf="s.descripcion"><em>{{ s.descripcion }}</em></p>
   <hr>
 </div>

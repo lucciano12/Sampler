@@ -1,13 +1,13 @@
 import { Component, OnInit } from '@angular/core'; // Importamos los decoradores Component y OnInit de Angular
 import { SamplerService, Sampler } from '../../services/sampler'; // Importamos el servicio Sampler y la interfaz Sampler
 import { NgIf, NgFor } from '@angular/common'; // Importamos NgIf y NgFor para usar en la plantilla
-import { FormControl } from '@angular/forms';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { debounceTime } from 'rxjs';
 
 @Component({
   selector: 'app-lista-samplers',
   standalone: true, // Indicamos que este componente es independiente
-  imports: [NgIf, NgFor], // Importamos NgIf y NgFor para usar en la plantilla
+  imports: [NgIf, NgFor, ReactiveFormsModule], // Importamos NgIf y NgFor para usar en la plantilla
   templateUrl: './lista-samplers.html',
   styleUrl: './lista-samplers.scss'
 })
@@ -83,7 +83,7 @@ function normalize(v: string | undefined | null): string {
 }
 
 /** Sencillo scoring por relevancia: título (3x), artista (2x), descripción/fuente (1x) */
-function scoreSampler(s: Sampler, term: string): number {
+function scoreSampler(s: Sampler, term: string): number { 
   const titulo = normalize(s.titulo);
   const artista = normalize(s.artista);
   const fuente = normalize(s.fuente);

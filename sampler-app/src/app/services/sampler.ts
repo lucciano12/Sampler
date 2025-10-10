@@ -21,7 +21,7 @@ export class SamplerService {
 
     constructor(private http: HttpClient) { } //Inyectamos HttpClient en el constructor
 
-    //Método para obtener los datos del sampler
+    //*Método para obtener los datos del sampler*
     getSampler(): Observable< {samplers: Sampler[]}> { //Devolvemos un Observable que emite un objeto con un array de samplers
         return this.http.get<{samplers:Sampler[]}>(this.mockUrl); //Realizamos una petición GET al mock y devolvemos un Observable de tipo Sampler[]
     }

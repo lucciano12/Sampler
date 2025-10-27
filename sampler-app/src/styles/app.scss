@@ -1,0 +1,17 @@
+//Varoable globales de estilos (override de Bootstrap)
+
+@import './variables.scss';
+
+//Importar Bootstrap 
+@import 'bootstrap/scss/bootstrap';
+
+//Importar Bootstrap Icons
+@import 'bootstrap-icons/font/bootstrap-icons';
+
+:root{ // El root es el selector que representa al elemento html, seran mis utilidades extras opcionales globales
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.06); 
+  --shadow-md: 0 4px 10px rgba(0, 0, 0, 0.8);
+}
+.card{ // El card es un componente de bootstrap, le agrego una sombra extra
+  box-shadow: var(--shadow-sm);
+}

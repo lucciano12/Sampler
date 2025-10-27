@@ -1,0 +1,35 @@
+//Tipografia
+
+$font-family-sans-serif: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, 'Noto Sans', 'Helvetica Neue', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
+
+//Colores clave
+$primary: #6C5CE7;
+$secondary: #6c757d;
+$success: #2ecc71;
+$info: #00bcd4;
+$warning: #f1c40f;
+$danger: #e74c3c;
+$light: #f8f9fa;
+$dark: #212529;
+
+//Fondo y texto
+$body-bg: #fff;
+$body-color: #1c1e21;
+
+//Radios y sombras
+$border-radius:        .75rem;
+$border-radius-sm:     .5rem;
+$border-radius-lg:     1rem;
+
+// Espaciado base
+$spacer: .75rem;
+
+// Contenedores (Son los anchos máximos de los contenedores responsivos)
+$container-max-widths: (
+  sm: 540px,
+  md: 760px,
+  lg: 1000px,
+  xl: 1160px,
+  xxl: 1320px
+);
+

@@ -11,7 +11,33 @@
       "titulo": "Violent Crimes",
       "artista": "Kanye West",
       "fuente": "Spotify",
-      "enlace": "https://open.spotify.com/intl-es/track/3s7MCdXyWmwjdcWh7GWXas?si=c744331685434d0a"
+      "enlace": "https://open.spotify.com/track/...",
+      "key": "Bm",
+      "tempo": 92,
+      "genero": "Hip-Hop",
+      "estilo": "Nostalgia",
+      "plataformas": [
+        {
+          "nombre": "Spotify",
+          "tipo": "stream",
+          "url": "https://open.spotify.com/track/..."
+        },
+        {
+          "nombre": "YouTube",
+          "tipo": "video",
+          "url": "https://www.youtube.com/watch?v=..."
+        }
+      ],
+      "comentarios": [
+        {
+          "usuario": "@fan1",
+          "texto": "Gran atmósfera, cuerdas bonitas."
+        },
+        {
+          "usuario": "@fan2",
+          "texto": "Suena perfecto para un beat lento."
+        }
+      ]
     }
   ]
 }

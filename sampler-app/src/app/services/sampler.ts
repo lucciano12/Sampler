@@ -11,6 +11,12 @@ export interface Sampler{
   fuente: string; //Fuente del sampler
   enlace: string; //Enlace al sampler
   descripcion?: string; //Descripción del sampler
+  key?: string;             // ej: "Am"
+  tempo?: number;           // ej: 92
+  genero?: string;          // ej: "R&B"
+  estilo?: string;          // ej: "Nostalgia"
+  plataformas?: { nombre: string; tipo: 'stream' | 'video'; url: string }[];
+  comentarios?: { usuario: string; texto: string }[];
 }
 
 @Injectable({

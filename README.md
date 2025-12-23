@@ -547,23 +547,7 @@ Este proyecto está bajo licencia **MIT**. Consulta el archivo `LICENSE` para m�
 
 - **Autor**: lucciano12  
 - **GitHub**: https://github.com/lucciano12/Sampler  
-- **Email**: (agregar tu contacto si corresponde)
+- **Email**: prado.lucciano@gmail.com
 
----
-
-## 📝 Changelog
-
-### v0.0.1 (23 de diciembre de 2025)
-- ✅ MVP inicial con búsqueda y filtro básicos
-- ✅ Lógica de ranking por relevancia (titulo x3, artista x2, descripción x1)
-- ✅ Template con offcanvas y tabs para detalle
-- ✅ Diagrama de flujo del componente `lista-samplers`
-- 🚀 Preparado para agregar portadas y estilo Splice en v0.1.0
-
----
-
-**Última actualización**: 23 de diciembre de 2025  
-**Versión**: 0.0.1 (MVP)  
-**Estado**: ✅ En desarrollo activo  
 
 ¡Gracias por tu interés en el proyecto **Sampler**! 🎵✨

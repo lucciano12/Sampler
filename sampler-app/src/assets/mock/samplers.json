@@ -5,13 +5,33 @@
       "artista": "Macha y El Bloque Depresivo Oficial",
       "fuente": "YouTube",
       "enlace": "https://www.youtube.com/watch?v=ZCr7hDnVbuI&list=RDZCr7hDnVbuI&start_radio=1",
-      "descripcion": "@SatoMoon11: 'Uno vuelve siempre, a los viejos sitios, donde amó la vida. Simplemente, no puede ser más cierto.'"
+      "descripcion": "@SatoMoon11: 'Uno vuelve siempre, a los viejos sitios, donde amó la vida. Simplemente, no puede ser más cierto.'",
+      "portada": "https://images.genius.com/202a6d0aa0d2b568c6722ab0356bfea3.300x300x1.jpg",
+      "key": "Gm",
+      "tempo": 95,
+      "genero": "Bolero",
+      "estilo": "Melancólico",
+      "plataformas": [
+        {
+          "nombre": "YouTube",
+          "tipo": "video",
+          "url": "https://www.youtube.com/watch?v=ZCr7hDnVbuI"
+        }
+      ],
+      "comentarios": [
+        {
+          "usuario": "@SatoMoon11",
+          "texto": "Uno vuelve siempre, a los viejos sitios, donde amó la vida..."
+        }
+      ]
     },
     {
       "titulo": "Violent Crimes",
       "artista": "Kanye West",
       "fuente": "Spotify",
-      "enlace": "https://open.spotify.com/track/...",
+      "enlace": "https://open.spotify.com/intl-es/track/3s7MCdXyWmwjdcWh7GWXas?si=c744331685434d0a",
+      "descripcion": "Una canción introspectiva sobre la paternidad y el crecimiento.",
+      "portada": "https://images.genius.com/68020584ea9e9de4f5e82af7a4d629ef.888x888x1.png",
       "key": "Bm",
       "tempo": 92,
       "genero": "Hip-Hop",
@@ -20,12 +40,12 @@
         {
           "nombre": "Spotify",
           "tipo": "stream",
-          "url": "https://open.spotify.com/track/..."
+          "url": "https://open.spotify.com/intl-es/track/3s7MCdXyWmwjdcWh7GWXas"
         },
         {
           "nombre": "YouTube",
           "tipo": "video",
-          "url": "https://www.youtube.com/watch?v=..."
+          "url": "https://www.youtube.com/watch?v=dTcyiwCbXSE&list=RDdTcyiwCbXSE&start_radio=1"
         }
       ],
       "comentarios": [

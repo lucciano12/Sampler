@@ -1,105 +1,171 @@
-<header class="border-bottom bg-white sticky-top">
-  <div class="container py-2 d-flex align-items-center gap-3">
-    <div class="d-flex align-items-center gap-2 me-auto">
-      <i class="bi bi-music-note-beamed fs-4 text-primary"></i>
-      <span class="fw-semibold">Sampler</span>
-    </div>
+<div class="container-fluid d-flex flex-column">
 
-    <!-- Filtro por fuente -->
-    <select class="form-select w-auto" [formControl]="fuente" aria-label="Filtrar por fuente">
-      <option value="todas">Todas</option>
-      <option value="YouTube">YouTube</option>
-      <option value="Spotify">Spotify</option>
-    </select>
+  <!-- HEADER -->
+  <div class="header">
+    <div class="container-fluid px-4">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div class="logo">Sampler</div>
 
-    <!-- Buscador -->
-    <div class="input-group" style="max-width: 520px;">
-      <span class="input-group-text"><i class="bi bi-search"></i></span>
-      <input type="search" class="form-control" placeholder="Buscar por título, artista, fuente o descripción…" [formControl]="q">
-    </div>
-  </div>
-</header>
-
-
-<main class="container my-4">
-  <div *ngIf="loading" class="alert alert-secondary">Cargando…</div>
-  <div *ngIf="!loading && errorMsg" class="alert alert-danger">{{ errorMsg }}</div>
-  <div *ngIf="!loading && !errorMsg && filtered.length === 0" class="alert alert-warning">Sin resultados</div>
-
-  <div class="row g-3">
-    <div class="col-12 col-md-6 col-lg-4" *ngFor="let s of filtered">
-      <div class="card h-100 shadow-sm">
-        <div class="card-body d-flex flex-column">
-          <h6 class="card-title mb-1 text-truncate">{{ s.titulo }}</h6>
-          <div class="text-muted small mb-2 text-truncate">{{ s.artista }}</div>
-
-          <div class="d-flex flex-wrap gap-2 mb-3">
-            <span class="badge bg-primary-subtle text-primary-emphasis">Fuente: {{ s.fuente }}</span>
-            <span class="badge bg-secondary-subtle text-secondary-emphasis" *ngIf="s.key">Key: {{ s.key }}</span>
-            <span class="badge bg-info-subtle text-info-emphasis" *ngIf="s.tempo">Tempo: {{ s.tempo }} bpm</span>
-            <span class="badge bg-success-subtle text-success-emphasis" *ngIf="s.genero">{{ s.genero }}</span>
-            <span class="badge bg-warning-subtle text-warning-emphasis" *ngIf="s.estilo">{{ s.estilo }}</span>
-          </div>
-
-          <p class="small text-body-secondary mb-3" *ngIf="s.descripcion" style="min-height:2.5em">
-            {{ s.descripcion }}
-          </p>
-
-          <div class="mt-auto d-flex gap-2">
-            <a class="btn btn-outline-primary btn-sm" [href]="s.enlace" target="_blank" rel="noopener">
-              Abrir enlace
-            </a>
-            <button class="btn btn-primary btn-sm" (click)="abrirDetalle(s)">Ver detalle</button>
-          </div>
+        <div class="search-container">
+          <input type="text" class="search-input" placeholder="Buscar..." [formControl]="q">
+          <i class="bi bi-search" style="color: #999; font-size: 1.2rem;"></i>
         </div>
       </div>
     </div>
   </div>
-</main>
 
-<!-- Offcanvas lateral -->
-<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasDetalle" aria-labelledby="offcanvasDetalleLabel">
-  <div class="offcanvas-header">
-    <h5 class="offcanvas-title" id="offcanvasDetalleLabel">{{ sampleSel?.titulo || 'Detalle' }}</h5>
-    <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+  <!-- FILTROS -->
+  <div class="container-fluid px-4">
+    <div class="filter-section">
+      <i class="bi bi-vinyl icon-sampler"></i>
+
+      <input type="text" class="filter-input" placeholder="Buscar por título, artista, fuente" [formControl]="q"
+        autocomplete="off">
+
+      <select class="filter-select" [formControl]="fuente">
+        <option value="todas">Todas</option>
+        <option value="Spotify">Spotify</option>
+        <option value="YouTube">YouTube</option>
+      </select>
+    </div>
   </div>
-  <div class="offcanvas-body d-flex flex-column">
-    <ul class="nav nav-tabs mb-3" role="tablist">
-      <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-plataformas" role="tab">Plataformas</button></li>
-      <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-comentarios" role="tab">Comentarios</button></li>
-      <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-metadatos" role="tab">Metadatos</button></li>
-    </ul>
 
-    <div class="tab-content flex-grow-1 overflow-auto">
-      <div class="tab-pane fade show active" id="tab-plataformas" role="tabpanel">
-        <div class="list-group">
-          <a *ngFor="let p of sampleSel?.plataformas" [href]="p.url" target="_blank" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-            <span><i class="bi bi-link-45deg me-1"></i>{{ p.nombre }}</span>
-            <span class="badge bg-primary">{{ p.tipo }}</span>
-          </a>
-        </div>
+  <!-- ESTADO DE CARGA / ERROR -->
+  <div class="container-fluid px-4" *ngIf="loading || errorMsg || (filtered.length === 0 && !loading)">
+    <div *ngIf="loading" class="alert alert-secondary">Cargando…</div>
+    <div *ngIf="!loading && errorMsg" class="alert alert-danger">{{ errorMsg }}</div>
+    <div *ngIf="!loading && !errorMsg && filtered.length === 0" class="alert alert-warning">Sin resultados</div>
+  </div>
+
+
+  <!-- Grid de Cards -->
+  <div *ngIf="!loading && !errorMsg" class="grid-container">
+    <div *ngFor="let s of filtered" class="card h-100 shadow-sm" (click)="abrirDetalle(s)" style="cursor: pointer;">
+
+      <!-- Portada -->
+      <div class="card-image">
+        <img [src]="s.portada || 'assets/placeholder.png'" [alt]="s.titulo" loading="lazy"
+          onerror="this.src='https://placehold.co/400x400?text=No+Cover'">
+
+        <!-- NUEVO: Botón zoom (+) -->
+        <button class="zoom-btn" (click)="openZoomModal(s.portada, s.titulo); $event.stopPropagation()"
+          [attr.aria-label]="'Ampliar imagen: ' + s.titulo">
+          <i class="bi bi-plus-lg"></i>
+        </button>
+
+        <span class="source-tag" [class]="s.fuente.toLowerCase()">
+          {{ s.fuente }}
+        </span>
       </div>
 
-      <div class="tab-pane fade" id="tab-comentarios" role="tabpanel">
-        <div class="list-group small" *ngIf="sampleSel?.comentarios?.length; else noCom">
-          <div class="list-group-item" *ngFor="let c of sampleSel?.comentarios">
-            <div class="fw-semibold">{{ c.usuario }}</div>
-            <div class="text-body-secondary">{{ c.texto }}</div>
-          </div>
-        </div>
-        <ng-template #noCom><p class="text-body-secondary">Sin comentarios.</p></ng-template>
-      </div>
 
-      <div class="tab-pane fade" id="tab-metadatos" role="tabpanel">
-        <dl class="row small">
-          <dt class="col-sm-3">Artista</dt><dd class="col-sm-9">{{ sampleSel?.artista }}</dd>
-          <dt class="col-sm-3">Key</dt><dd class="col-sm-9">{{ sampleSel?.key || '—' }}</dd>
-          <dt class="col-sm-3">Tempo</dt><dd class="col-sm-9">{{ sampleSel?.tempo || '—' }}</dd>
-          <dt class="col-sm-3">Género</dt><dd class="col-sm-9">{{ sampleSel?.genero || '—' }}</dd>
-          <dt class="col-sm-3">Estilo</dt><dd class="col-sm-9">{{ sampleSel?.estilo || '—' }}</dd>
-        </dl>
+      <!-- Contenido Card -->
+      <div class="card-content">
+        <h3>{{ s.titulo }}</h3>
+        <p class="artist">{{ s.artista }}</p>
+        <p class="description">{{ s.descripcion }}</p>
+
+        <a href="#" class="btn-link" (click)="abrirDetalle(s); $event.preventDefault(); $event.stopPropagation()">
+          Ver Detalles
+        </a>
       </div>
     </div>
   </div>
-</div>
 
+  <!-- ZOOM MODAL -->
+  <div class="zoom-backdrop" *ngIf="zoomModalOpen" (click)="closeZoomOnBackdropClick($event)">
+    <div class="zoom-modal">
+      <button class="zoom-close-btn" (click)="closeZoomModal()" aria-label="Cerrar zoom">
+        <i class="bi bi-x-lg"></i>
+      </button>
+
+      <img [src]="zoomImage!" [alt]="zoomTitle || 'Zoom'">
+    </div>
+  </div>
+
+
+  <!-- Offcanvas (Detalle) -->
+  <div class="offcanvas offcanvas-end text-bg-dark" tabindex="-1" id="offcanvasDetalle"
+    aria-labelledby="offcanvasDetalleLabel">
+    <div class="offcanvas-header border-bottom border-secondary">
+      <h5 class="offcanvas-title" id="offcanvasDetalleLabel">{{ sampleSel?.titulo || 'Detalle' }}</h5>
+      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body d-flex flex-column">
+
+      <!-- Portada en grande en el offcanvas -->
+      <div class="text-center mb-4" *ngIf="sampleSel?.portada">
+        <img [src]="sampleSel?.portada" class="img-fluid rounded shadow" style="max-height: 250px;" alt="Portada">
+      </div>
+
+      <ul class="nav nav-tabs nav-fill mb-3 border-secondary" role="tablist">
+        <li class="nav-item">
+          <button class="nav-link active text-white" data-bs-toggle="tab" data-bs-target="#tab-plataformas"
+            role="tab">Plataformas</button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link text-white" data-bs-toggle="tab" data-bs-target="#tab-metadatos"
+            role="tab">Info</button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link text-white" data-bs-toggle="tab" data-bs-target="#tab-comentarios"
+            role="tab">Comentarios</button>
+        </li>
+      </ul>
+
+      <div class="tab-content flex-grow-1 overflow-auto">
+        <!-- Tab: Plataformas -->
+        <div class="tab-pane fade show active" id="tab-plataformas" role="tabpanel">
+          <div class="list-group list-group-flush">
+            <!-- Si hay array de plataformas -->
+            <ng-container *ngFor="let p of sampleSel?.plataformas">
+              <a [href]="p.url" target="_blank"
+                class="list-group-item list-group-item-action list-group-item-dark d-flex justify-content-between align-items-center mb-2 rounded">
+                <span><i class="bi bi-play-circle-fill me-2"></i>Escuchar en {{ p.nombre }}</span>
+                <span class="badge bg-primary rounded-pill">{{ p.tipo }}</span>
+              </a>
+            </ng-container>
+
+            <!-- Fallback si solo existe el enlace principal -->
+            <div *ngIf="!sampleSel?.plataformas?.length && sampleSel?.enlace">
+              <a [href]="sampleSel?.enlace" target="_blank"
+                class="list-group-item list-group-item-action list-group-item-dark d-flex justify-content-between align-items-center rounded">
+                <span><i class="bi bi-box-arrow-up-right me-2"></i>Escuchar en {{ sampleSel?.fuente }}</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab: Metadatos -->
+        <div class="tab-pane fade" id="tab-metadatos" role="tabpanel">
+          <dl class="row small">
+            <dt class="col-sm-4 text-secondary">Artista</dt>
+            <dd class="col-sm-8">{{ sampleSel?.artista }}</dd>
+            <dt class="col-sm-4 text-secondary">Key</dt>
+            <dd class="col-sm-8">{{ sampleSel?.key || '—' }}</dd>
+            <dt class="col-sm-4 text-secondary">Tempo</dt>
+            <dd class="col-sm-8">{{ sampleSel?.tempo || '—' }}</dd>
+            <dt class="col-sm-4 text-secondary">Género</dt>
+            <dd class="col-sm-8">{{ sampleSel?.genero || '—' }}</dd>
+            <dt class="col-sm-4 text-secondary">Estilo</dt>
+            <dd class="col-sm-8">{{ sampleSel?.estilo || '—' }}</dd>
+            <dt class="col-sm-4 text-secondary">Descripción</dt>
+            <dd class="col-sm-8">{{ sampleSel?.descripcion || '—' }}</dd>
+          </dl>
+        </div>
+
+        <!-- Tab: Comentarios -->
+        <div class="tab-pane fade" id="tab-comentarios" role="tabpanel">
+          <div class="list-group list-group-flush" *ngIf="sampleSel?.comentarios?.length; else noCom">
+            <div class="list-group-item list-group-item-dark mb-2 rounded" *ngFor="let c of sampleSel?.comentarios">
+              <div class="fw-bold text-info small">{{ c.usuario }}</div>
+              <div class="text-light small">{{ c.texto }}</div>
+            </div>
+          </div>
+          <ng-template #noCom>
+            <p class="text-secondary text-center mt-3">Sin comentarios.</p>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+  </div>

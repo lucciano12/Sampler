@@ -1,0 +1,534 @@
+// Variables
+$primary-color: #1ed760;
+$secondary-color: #191414;
+$card-bg: #1e1e1e;
+$header-bg: #0a0a0a;
+$text-primary: #ffffff;
+$text-secondary: #b3b3b3;
+$radius: 6px;
+$accent-color: #ff006e;
+
+//Header
+.header {
+  background: $header-bg;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 2rem 0;
+  margin-bottom: 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 99;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+
+  .logo {
+    font-size: 2rem;
+    font-weight: 700;
+    color: $primary-color;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  .search-container {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+}
+
+//Search Box
+.search-input {
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  color: $text-primary;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  min-width: 200px;
+
+  &::placeholder {
+    color: $text-secondary;
+  }
+
+  &:focus {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: $primary-color;
+    box-shadow: 0 0 0 3px rgba(30, 215, 96, 0.2);
+  }
+}
+
+//Filtro
+.filter-section {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 2rem;
+
+  .icon-sampler {
+    font-size: 1.5rem;
+    color: $primary-color;
+  }
+
+  .filter-input,
+  .filter-select {
+    padding: 0.75rem 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    color: $text-primary;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    min-width: 150px;
+
+    &::placeholder {
+      color: $text-secondary;
+    }
+
+    &:focus {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: $primary-color;
+    }
+  }
+
+  .filter-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3e%3cpath fill='%23ffffff' d='M6 9L1 4h10z'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    padding-right: 2rem;
+  }
+}
+
+
+:host {
+  // Es el contenedor principal
+  display: block;
+  font-family: 'Inter', sans-serif;
+  color: $text-primary;
+}
+
+h2 {
+  // Es el título principal
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  font-weight: 700;
+}
+
+.toolbar {
+  // Es el contenedor de los filtros
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+
+  input[type="search"],
+  select {
+    padding: 0.75rem 1rem;
+    border-radius: $radius;
+    border: 1px solid #333;
+    background: #2a2a2a;
+    color: white;
+    font-size: 1rem;
+
+    &:focus {
+      outline: 2px solid $accent-color;
+      border-color: transparent;
+    }
+  }
+
+  input[type="search"] {
+    flex: 1;
+    min-width: 250px;
+  }
+}
+
+//Grid container
+
+.grid-container {
+  // Es el contenedor de los cards
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.5rem;
+  padding: 0 1rem 2rem 1rem;
+}
+
+//Tarjetas
+.card {
+  // Es el contenedor de cada card
+  background: $card-bg;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  &:hover {
+    transform: translateY(-8px);
+    border-color: rgba(30, 214, 96, 0.3);
+    box-shadow: 0 16px 40px rgba(30, 215, 96, 0.2), 0 8px 24px rgba(0, 0, 0, 0.3);
+
+    .card-image img {
+      transform: scale(1.08);
+    }
+
+    &:active {
+      transform: translateY(-4px);
+    }
+  }
+
+  //Imagen Tarjeta
+
+  .card-image {
+    // Es el contenedor de la portada
+    position: relative;
+    padding-top: 100%; // 1:1 Aspect Ratio
+    overflow: hidden;
+    background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+
+    img {
+      // Es la portada
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* .source-tag {
+      // Es la etiqueta de la fuente
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: bold;
+      color: white;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+
+      &.spotify {
+        background: rgba(30, 215, 96, 0.9);
+        color: black;
+      }
+
+      &.youtube {
+        background: rgba(255, 0, 0, 0.9);
+      }
+    } */
+  }
+
+  //Badges de fuentes
+  .source-tag {
+    // Es la etiqueta de la fuente
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 6px 12px; //4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 5;
+    transition: all 0.3s ease;
+
+    &.spotify {
+      background: rgba(30, 215, 96, 0.9);
+      color: black;
+    }
+
+    &.youtube {
+      background: rgba(255, 0, 0, 0.9);
+      color: white;
+    }
+
+    &:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+    }
+  }
+
+  //Contenido de la tarjeta
+  .card-content {
+    // Es el contenedor del contenido de la card
+    padding: 1.25rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+
+    h3 {
+      // Es el título de la card
+      margin: 0 0 0.5rem 0;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: $text-primary;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: color 0.3s ease;
+    }
+
+    .artist {
+      // Es el artista de la card
+      color: $text-secondary;
+      font-size: 0.9rem;
+      margin: 0 0 0.75rem 0;
+    }
+
+    .description {
+      // Es la descripción de la card
+      font-size: 0.85rem;
+      color: $text-secondary;
+      display: -webkit-box;
+      line-height: 1.4;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      flex: 1;
+      margin: 0 0 1rem 0;
+    }
+
+    .btn-link {
+      align-self: flex-start;
+      padding: 0.5rem 1rem;
+      background: rgba(30, 215, 96, 0.15);
+      color: $primary-color;
+      border: 1px solid rgba(30, 215, 96, 0.3);
+      border-radius: 4px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      text-decoration: none;
+
+      &:hover {
+        background: rgba(30, 215, 96, 0.25);
+        border-color: $primary-color;
+        transform: translateX(2px);
+      }
+    }
+  }
+}
+
+//Zoom Modal
+.zoom-btn {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba($primary-color, 0.95);
+  color: white;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(30, 215, 96, 0.3);
+  opacity: 0;
+  z-index: 10;
+
+  &:hover {
+    background: rgba($primary-color, 1);
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(30, 215, 96, 0.5);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.card-image:hover .zoom-btn {
+  opacity: 1;
+}
+
+.zoom-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 1000;
+  animation: fadeInBackdrop 0.3s ease;
+
+  @keyframes fadeInBackdrop {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+}
+
+.zoom-modal {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: scaleInModal 0.3s ease;
+
+  @keyframes scaleInModal {
+    from {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  img {
+    max-width: 100%;
+    max-height: 85vh;
+    object-fit: contain;
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+  }
+}
+
+.zoom-close-btn {
+  position: absolute;
+  top: -50px;
+  right: 0;
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid white;
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 1.25rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  z-index: 1001;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+  }
+}
+
+//Responsive
+@media (max-width: 768px) {
+  .header {
+    padding: 1.5rem 0;
+    margin-bottom: 1.5rem;
+
+    .logo {
+      font-size: 1.5rem;
+    }
+
+    .search-container {
+      flex-direction: column;
+      width: 100%;
+    }
+
+    .search-input {
+      width: 100%;
+      min-width: unset;
+    }
+  }
+
+  .filter-section {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+
+    .filter-input,
+    .filter-select {
+      min-width: 120px;
+      padding: 0.6rem 0.8rem;
+      font-size: 0.9rem;
+    }
+  }
+
+  .grid-container {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1rem;
+    padding: 0 0.75rem 1.5rem 0.75rem;
+  }
+
+  .card-content {
+    padding: 1rem;
+
+    h3 {
+      font-size: 0.95rem;
+    }
+
+    .description {
+      font-size: 0.8rem;
+      -webkit-line-clamp: 1;
+      line-clamp: 1;
+    }
+  }
+
+  .zoom-close-btn {
+    top: 10px;
+    right: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .grid-container {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .card {
+    border-radius: 8px;
+  }
+
+  .header {
+    padding: 1rem 0;
+    margin-bottom: 1rem;
+
+    .logo {
+      font-size: 1.25rem;
+    }
+  }
+}
+
+//Animaciones
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.grid-container .card {
+  animation: slideUp 0.5s ease forwards;
+
+  @for $i from 1 through 12 {
+    &:nth-child(#{$i}) {
+      animation-delay: $i * 0.05s;
+    }
+  }
+}

@@ -38,8 +38,8 @@ $accent-color: #ff006e;
 //Search Box
 .search-input {
   padding: 0.75rem 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.09);
   border-radius: 6px;
   color: $text-primary;
   font-size: 0.95rem;
@@ -51,9 +51,17 @@ $accent-color: #ff006e;
   }
 
   &:focus {
-    background: rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.14);
     border-color: $primary-color;
-    box-shadow: 0 0 0 3px rgba(30, 215, 96, 0.2);
+    box-shadow: 0 0 0 3px rgba(30, 215, 96, 0.18);
+  }
+
+  &.transparent {
+    background: transparent;
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: none;
+    &::placeholder { color: rgba(255,255,255,0.45); }
+    &:focus { box-shadow: 0 0 0 3px rgba(30, 215, 96, 0.12); }
   }
 }
 
@@ -72,8 +80,8 @@ $accent-color: #ff006e;
   .filter-input,
   .filter-select {
     padding: 0.75rem 1rem;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    background: rgba(255, 255, 255, 0.09);
     border-radius: 6px;
     color: $text-primary;
     font-size: 0.95rem;
@@ -85,8 +93,16 @@ $accent-color: #ff006e;
     }
 
     &:focus {
-      background: rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.14);
       border-color: $primary-color;
+    }
+    &.transparent {
+      background: transparent;
+      border-color: rgba(255,255,255,0.12);
+      color: $text-primary;
+      box-shadow: none;
+      &::placeholder { color: rgba(255,255,255,0.45); }
+      &:focus { box-shadow: 0 0 0 3px rgba(30,215,96,0.08); }
     }
   }
 
@@ -531,4 +547,172 @@ h2 {
       animation-delay: $i * 0.05s;
     }
   }
+}
+
+// Offcanvas (detalle) tweaks: force dark tabs & tab-content to avoid white tab panel
+.offcanvas {
+  background: $card-bg;
+  .offcanvas-header, .offcanvas-body {
+    background: transparent;
+  }
+
+  .nav-tabs {
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+
+    .nav-link {
+      background: transparent;
+      border: none;
+      color: $text-secondary;
+      &.active {
+        color: $text-primary;
+        background: transparent;
+        border-bottom: 3px solid $primary-color;
+        box-shadow: none;
+      }
+    }
+  }
+
+  .tab-content {
+    background: transparent;
+    .tab-pane {
+      background: transparent;
+      color: $text-primary;
+    }
+  }
+}
+
+// Comentarios: tarjetas y campos dentro del offcanvas
+.offcanvas .tab-pane#tab-comentarios {
+  .list-group {
+    .list-group-item {
+      background: rgba(255,255,255,0.06);
+      border: none;
+      color: $text-primary;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+    }
+  }
+
+  // Si existe un form/input o textarea para añadir comentarios
+  textarea, input[type="text"], .form-control {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.12);
+    color: $text-primary;
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    &:focus { box-shadow: 0 0 0 3px rgba(30,215,96,0.08); }
+    &::placeholder { color: rgba(255,255,255,0.45); }
+  }
+}
+
+// High-specificity overrides to defeat Bootstrap defaults (force transparent/dark look)
+.offcanvas, .offcanvas * {
+  background-color: transparent !important;
+  color: inherit !important;
+}
+
+.offcanvas .nav-tabs {
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+
+  .nav-link {
+    position: relative;
+    padding-bottom: 0.8rem;
+    background-color: transparent !important;
+    border: none !important;
+    color: $text-secondary !important;
+
+    &::after {
+      content: '';
+      position: absolute;
+      left: 12%;
+      right: 12%;
+      bottom: -6px;
+      height: 3px;
+      background: transparent;
+      border-radius: 2px;
+      transition: all 180ms ease-in-out;
+    }
+
+    &.active {
+      color: $text-primary !important;
+      box-shadow: none !important;
+      &::after { background: $primary-color; }
+    }
+  }
+}
+
+.offcanvas .tab-content, .offcanvas .tab-pane {
+  background-color: transparent !important;
+  color: $text-primary !important;
+}
+// Also apply underline indicator for any nav-tabs outside offcanvas
+.nav-tabs .nav-link {
+  position: relative;
+  padding-bottom: 0.8rem;
+}
+.nav-tabs .nav-link::after {
+  content: '';
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  bottom: 0;
+  height: 3px;
+  background: transparent;
+  border-radius: 2px;
+  transition: all 180ms ease-in-out;
+}
+.nav-tabs .nav-link.active::after {
+  background: $primary-color;
+}
+.offcanvas .tab-pane {
+  background-color: transparent !important;
+  color: $text-primary !important;
+}
+
+/* Ensure filter select/input transparent variants override component or bootstrap styles */
+.filter-input.transparent,
+.filter-select.transparent,
+.search-input.transparent,
+.offcanvas input.transparent,
+.offcanvas select.transparent,
+.offcanvas .form-control.transparent {
+  background-color: transparent !important;
+  border-color: rgba(255,255,255,0.12) !important;
+  color: $text-primary !important;
+}
+
+/* Remove any white backgrounds on nav-pills or tab indicators */
+.offcanvas .nav-pills .nav-link,
+.offcanvas .nav-tabs .nav-item .nav-link {
+  background: transparent !important;
+}
+
+/* Limit transparency/styling only to the filter select in the toolbar/filter section
+   This avoids affecting cards, offcanvas panels or other dropdowns. */
+.filter-section .filter-select,
+.filter-section .filter-select.transparent,
+.filter-select {
+  background-color: transparent !important;
+  color: $text-primary !important;
+  border-color: rgba(255,255,255,0.12) !important;
+  box-shadow: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+}
+
+/* Try to scope dropdowns produced by plugins to the filter area (if plugin nests inside)
+   Note: browser native option dropdowns may still use the OS theme and cannot be fully styled. */
+.filter-section .dropdown-menu,
+.filter-section .bootstrap-select .dropdown-menu,
+.filter-section .select2-container .select2-dropdown {
+  background-color: transparent !important;
+  border-color: rgba(255,255,255,0.06) !important;
+  color: $text-primary !important;
+  box-shadow: none !important;
+}
+
+.filter-section select option {
+  background-color: $card-bg !important;
+  color: $text-primary !important;
 }

@@ -29,7 +29,30 @@ export class ListaSamplers implements OnInit {
   loading = false; //Indicador de carga
   errorMsg = ''; //Mensaje de error
 
-  constructor(private samplerService: SamplerService) {} //Inyectamos el servicio Sampler en el constructor
+  // Zoom Modal
+  zoomModalOpen = false;
+  zoomImage: string | null = null;
+  zoomTitle: string | null = null;
+
+  openZoomModal(imagen: string | undefined | null, titulo: string): void {
+    this.zoomImage = imagen || null;
+    this.zoomTitle = titulo;
+    this.zoomModalOpen = true;
+  }
+
+  closeZoomModal(): void {
+    this.zoomModalOpen = false;
+    this.zoomImage = null;
+    this.zoomTitle = null;
+  }
+
+  closeZoomOnBackdropClick(event: MouseEvent): void {
+    if (event.target === event.currentTarget) {
+      this.closeZoomModal();
+    }
+  }
+
+  constructor(private samplerService: SamplerService) { } //Inyectamos el servicio Sampler en el constructor
 
   ngOnInit() {
     //Método que se ejecuta al inicializar el componente, con el this llamamos a las propiedades y métodos de la clase
@@ -65,8 +88,8 @@ export class ListaSamplers implements OnInit {
       fuente === 'todas'
         ? this.samplers //Si la fuente es 'todas', usamos todos los samplers (El ? significa "si")
         : this.samplers.filter(
-            (s) => s.fuente.toLowerCase() === fuente.toLowerCase()
-          ); //Si no, filtramos por la fuente seleccionada ( : significa "si no")
+          (s) => s.fuente.toLowerCase() === fuente.toLowerCase()
+        ); //Si no, filtramos por la fuente seleccionada ( : significa "si no")
 
     //2) Si no hay término de búsqueda, devolvemos la base filtrada por fuente
     if (!term) {
@@ -120,3 +143,5 @@ function scoreSampler(s: Sampler, term: string): number {
   if (desc.includes(term)) score += 1;
   return score;
 }
+
+

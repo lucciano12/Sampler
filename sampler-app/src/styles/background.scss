@@ -1,0 +1,27 @@
+/* Fondo de la aplicación
+*/
+
+:root {
+  --bg-left: #c94438; 
+  --bg-mid:  #8b6d4e; 
+  --bg-right: #2ecc71; 
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+}
+
+body {
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--bg-left) 0%, #b5533b 22%, var(--bg-mid) 50%, #6fbf6a 78%, var(--bg-right) 100%);
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: #ffffff;
+}
+
+main {
+  min-height: calc(100vh - 80px);
+}

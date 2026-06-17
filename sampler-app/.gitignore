@@ -42,5 +42,6 @@ testem.log
 Thumbs.db
 
 # Variables de entorno con API keys — no subir al repo
+.env
 src/environments/environment.ts
 src/environments/environment.prod.ts

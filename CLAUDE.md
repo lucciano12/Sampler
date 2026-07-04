@@ -2,6 +2,10 @@
 
 Buscador y catálogo de **samples musicales** (muestras predilectas de canciones) construido con **Angular 20**. Este proyecto permite explorar, buscar y descubrir samplers enriquecidos con metadatos musicales (BPM, key, género, portada) provenientes de múltiples APIs externas.
 
+> **⚠️ Arquitectura actual**: Todo el proyecto es **frontend puro** — corre completamente en el navegador, sin backend propio. Las APIs externas (Discogs, TheAudioDB, AcousticBrainz) se llaman directamente desde Angular vía HttpClient.
+>
+> **🔮 A futuro**: Está contemplado agregar un backend real en Node.js con base de datos (MongoDB, PostgreSQL) para manejar autenticación, persistencia de favoritos, comentarios propios y lógica del lado servidor. Ver [Roadmap](#-roadmap-del-readme-principal).
+
 ---
 
 ## 🏗️ Stack Tecnológico

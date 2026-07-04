@@ -485,7 +485,7 @@ Permitirá a los usuarios descubrir samplers que están siendo muy utilizados en
 - [ ] **Estadísticas** de búsqueda y trending análisis
 - [ ] **Mobile app** (React Native o Flutter)
 - [ ] Base de datos real (MongoDB, PostgreSQL)
-- [ ] Backend API real (Node.js, Python, etc.)
+- [ ] Backend API real en Node.js
 
 ---
 

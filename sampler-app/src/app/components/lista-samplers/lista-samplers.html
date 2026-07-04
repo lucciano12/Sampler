@@ -19,14 +19,15 @@
     <div class="filter-section">
       <i class="bi bi-vinyl icon-sampler"></i>
 
-      <input type="text" class="filter-input transparent" placeholder="Buscar por título, artista, fuente" [formControl]="q"
-        autocomplete="off">
+      <input type="text" class="filter-input transparent" placeholder="Buscar por título, artista, fuente"
+        [formControl]="q" autocomplete="off">
 
-      <select class="filter-select transparent" [formControl]="fuente">
-        <option value="todas">Todas</option>
-        <option value="Spotify">Spotify</option>
-        <option value="YouTube">YouTube</option>
-      </select>
+      <input type="text" class="filter-input transparent" placeholder="Escribe un estilo: Funk, Soul, Jazz..."
+        [formControl]="estiloCtrl" autocomplete="off" (keyup.enter)="buscar()">
+
+      <button class="btn btn-outline-light btn-sm" (click)="buscar()">
+        <i class="bi bi-search"></i>
+      </button>
     </div>
   </div>
 
@@ -134,24 +135,65 @@
               </a>
             </div>
           </div>
+
+          <!-- YouTube embed (sin API key, usa búsqueda pública) -->
+          <div class="ratio ratio-16x9 mb-3">
+            <iframe
+              [src]="getYoutubeSearchUrl(sampleSel)"
+              frameborder="0"
+              allowfullscreen>
+            </iframe>
+          </div>
         </div>
 
         <!-- Tab: Metadatos -->
         <div class="tab-pane fade" id="tab-metadatos" role="tabpanel">
           <dl class="row small">
+
             <dt class="col-sm-4 text-secondary">Artista</dt>
             <dd class="col-sm-8">{{ sampleSel?.artista }}</dd>
-            <dt class="col-sm-4 text-secondary">Key</dt>
-            <dd class="col-sm-8">{{ sampleSel?.key || '—' }}</dd>
-            <dt class="col-sm-4 text-secondary">Tempo</dt>
-            <dd class="col-sm-8">{{ sampleSel?.tempo || '—' }}</dd>
-            <dt class="col-sm-4 text-secondary">Género</dt>
-            <dd class="col-sm-8">{{ sampleSel?.genero || '—' }}</dd>
-            <dt class="col-sm-4 text-secondary">Estilo</dt>
-            <dd class="col-sm-8">{{ sampleSel?.estilo || '—' }}</dd>
+
+            <ng-container *ngIf="sampleSel?.key">
+              <dt class="col-sm-4 text-secondary">Key</dt>
+              <dd class="col-sm-8">{{ sampleSel?.key }}</dd>
+            </ng-container>
+
+            <ng-container *ngIf="sampleSel?.tempo">
+              <dt class="col-sm-4 text-secondary">Tempo</dt>
+              <dd class="col-sm-8">{{ sampleSel?.tempo }} BPM</dd>
+            </ng-container>
+
+            <ng-container *ngIf="sampleSel?.genero">
+              <dt class="col-sm-4 text-secondary">Género</dt>
+              <dd class="col-sm-8">{{ sampleSel?.genero }}</dd>
+            </ng-container>
+
+            <ng-container *ngIf="sampleSel?.estilo">
+              <dt class="col-sm-4 text-secondary">Estilo</dt>
+              <dd class="col-sm-8">{{ sampleSel?.estilo }}</dd>
+            </ng-container>
+
             <dt class="col-sm-4 text-secondary">Descripción</dt>
             <dd class="col-sm-8">{{ sampleSel?.descripcion || '—' }}</dd>
+
           </dl>
+
+          <!-- Tap Tempo: aparece solo cuando no hay dato de tempo -->
+          <div *ngIf="!sampleSel?.tempo" class="mt-3 border-top border-secondary pt-3">
+            <p class="text-secondary small mb-2">Medí el tempo manualmente</p>
+            <div class="d-flex align-items-center gap-3">
+              <button class="btn btn-outline-light btn-sm px-4 py-2" (click)="registrarTap()">
+                TAP
+              </button>
+              <span *ngIf="bpmCalculado" class="text-info fw-bold">
+                {{ bpmCalculado }} BPM
+              </span>
+              <button *ngIf="bpmCalculado" class="btn btn-link btn-sm text-secondary p-0" (click)="resetTap()">
+                Reset
+              </button>
+            </div>
+          </div>
+
         </div>
 
         <!-- Tab: Comentarios -->

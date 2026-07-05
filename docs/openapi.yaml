@@ -1,0 +1,321 @@
+openapi: 3.0.3
+info:
+  title: Sampler — Contratos de Integración con APIs Externas
+  description: >
+    Documentación de las APIs externas de música tal como las consume
+    el proyecto Sampler desde Angular vía HttpClient.
+
+    ⚠️ Este archivo documenta APIs de terceros, no endpoints propios
+    (el proyecto es frontend puro, sin backend). Cada endpoint describe
+    exactamente los campos que el servicio correspondiente lee de la respuesta.
+
+    Flujo de enriquecimiento:
+    Discogs (búsqueda base, portada, estilo)
+      → TheAudioDB (BPM, género, mood, portada, YouTube, MBID)
+      → AcousticBrainz (BPM preciso, key — usa el MBID de TheAudioDB)
+  version: 1.0.0
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://api.discogs.com
+    description: Discogs API — motor de búsqueda principal
+  - url: https://www.theaudiodb.com
+    description: TheAudioDB API — enriquecimiento de metadatos
+  - url: https://acousticbrainz.org
+    description: AcousticBrainz API — datos de audio de bajo nivel
+
+tags:
+  - name: Discogs
+    description: Búsqueda de releases musicales (portada, estilo, género)
+  - name: TheAudioDB
+    description: Metadatos de tracks (BPM, género, mood, YouTube, MBID)
+  - name: AcousticBrainz
+    description: Análisis de audio (BPM preciso, clave/tonalidad)
+
+# ===========================================================================
+# Schemas reutilizables — basados en sampler-app/src/app/models/api-responses.ts
+# ===========================================================================
+
+components:
+  securitySchemes:
+    DiscogsToken:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: >
+        Token de autenticación de Discogs.
+        El servicio envía el header como Authorization: Discogs token=DISCOGS_KEY
+
+  schemas:
+    # Discogs
+    DiscogsSearchResult:
+      type: object
+      description: Un release individual dentro de los resultados de búsqueda de Discogs
+      properties:
+        cover_image:
+          type: string
+          format: uri
+          description: URL de la imagen de portada del release
+        style:
+          type: array
+          description: Lista de estilos musicales asociados al release
+          items:
+            type: string
+        title:
+          type: string
+          description: Título del release, usualmente en formato Artista - Título
+        uri:
+          type: string
+          description: URI relativa del release en Discogs
+        genre:
+          type: array
+          description: Lista de géneros musicales asociados al release
+          items:
+            type: string
+
+    DiscogsSearchResponse:
+      type: object
+      description: Respuesta completa del endpoint de búsqueda de Discogs
+      properties:
+        results:
+          type: array
+          description: Array de releases que coinciden con la búsqueda (hasta 25 por página)
+          items:
+            $ref: '#/components/schemas/DiscogsSearchResult'
+
+    # TheAudioDB
+    AudioDbTrack:
+      type: object
+      description: Un track devuelto por TheAudioDB con metadatos musicales
+      properties:
+        idTrack:
+          type: string
+          description: ID único del track en TheAudioDB
+        strTrack:
+          type: string
+          nullable: true
+          description: Nombre del track
+        strArtist:
+          type: string
+          nullable: true
+          description: Nombre del artista
+        intBPM:
+          type: string
+          nullable: true
+          description: BPM del track como string (se parsea a número en el servicio)
+        strGenre:
+          type: string
+          nullable: true
+          description: Género musical del track
+        strMood:
+          type: string
+          nullable: true
+          description: Mood / estado de ánimo del track
+        strThumb:
+          type: string
+          nullable: true
+          description: URL de la imagen thumbnail del track
+        strMusicVid:
+          type: string
+          nullable: true
+          description: URL del video musical asociado
+        strMusicBrainzID:
+          type: string
+          nullable: true
+          description: MusicBrainz ID del track para vincular con AcousticBrainz
+
+    AudioDbSearchResponse:
+      type: object
+      description: Respuesta completa del endpoint de búsqueda de tracks de TheAudioDB
+      properties:
+        track:
+          type: array
+          nullable: true
+          description: Array de tracks que coinciden con la búsqueda, o null si no hay resultados
+          items:
+            $ref: '#/components/schemas/AudioDbTrack'
+
+    # AcousticBrainz
+    AcousticBrainzLowLevel:
+      type: object
+      description: Datos de audio de bajo nivel devueltos por AcousticBrainz
+      properties:
+        rhythm:
+          type: object
+          description: Información rítmica del track
+          properties:
+            bpm:
+              type: number
+              description: BPM detectado por análisis de audio
+        tonal:
+          type: object
+          description: Información tonal del track
+          properties:
+            key_key:
+              type: string
+              description: 'Tonalidad musical (ej: "A", "B", "C#")'
+            key_scale:
+              type: string
+              description: 'Escala musical (ej: "minor", "major")'
+
+# ===========================================================================
+# Paths — endpoints consumidos por el proyecto
+# ===========================================================================
+
+paths:
+  # 1. Discogs — Búsqueda de releases
+  /database/search:
+    get:
+      tags:
+        - Discogs
+      summary: Buscar releases por estilo o por artista + título
+      description: >
+        Motor de búsqueda principal del proyecto. Se consume desde DiscogsService
+        en dos modos: búsqueda por estilo (buscarPorEstilo) que obtiene hasta 25
+        releases de un estilo dado para poblar el catálogo, y enriquecimiento
+        (enrichFromDiscogs) que busca un release específico por artista + título
+        para obtener portada y estilo.
+      operationId: searchDiscogs
+      security:
+        - DiscogsToken: []
+      parameters:
+        - name: style
+          in: query
+          required: false
+          description: Estilo musical a buscar
+          schema:
+            type: string
+          example: Funk
+        - name: q
+          in: query
+          required: false
+          description: Término de búsqueda libre (artista + título)
+          schema:
+            type: string
+          example: Stevie Wonder Superstition
+        - name: type
+          in: query
+          required: false
+          description: Tipo de entidad a buscar (el proyecto siempre usa release)
+          schema:
+            type: string
+            enum:
+              - release
+          example: release
+        - name: per_page
+          in: query
+          required: false
+          description: Cantidad de resultados por página (el proyecto usa 25)
+          schema:
+            type: integer
+            default: 25
+          example: 25
+      responses:
+        '200':
+          description: Resultados de búsqueda de Discogs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiscogsSearchResponse'
+              example:
+                results:
+                  - cover_image: https://i.discogs.com/example.jpg
+                    style:
+                      - Funk
+                      - Soul
+                    title: Stevie Wonder - Superstition
+                    uri: /release/12345
+                    genre:
+                      - Funk / Soul
+        '401':
+          description: Token de Discogs inválido o ausente
+
+  # 2. TheAudioDB — Búsqueda de tracks
+  /api/v1/json/2/searchtrack.php:
+    get:
+      tags:
+        - TheAudioDB
+      summary: Buscar track por artista y título
+      security: []
+      description: >
+        Enriquece los metadatos del sampler con BPM, género, mood, portada
+        thumbnail, link de YouTube y MusicBrainz ID (usado luego por AcousticBrainz).
+        El servicio enrichFromAudioDb parsea intBPM a número y lo asigna
+        como tempo del sampler. También asigna strGenre como genero.
+      operationId: searchTrack
+      parameters:
+        - name: s
+          in: query
+          required: true
+          description: Nombre del artista
+          schema:
+            type: string
+          example: Stevie Wonder
+        - name: t
+          in: query
+          required: true
+          description: Título del track
+          schema:
+            type: string
+          example: Superstition
+      responses:
+        '200':
+          description: Resultados de búsqueda de TheAudioDB
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AudioDbSearchResponse'
+              example:
+                track:
+                  - idTrack: '12345'
+                    strTrack: Superstition
+                    strArtist: Stevie Wonder
+                    intBPM: '100'
+                    strGenre: Funk
+                    strMood: Groovy
+                    strThumb: https://www.theaudiodb.com/images/media/track/thumb/example.jpg
+                    strMusicVid: https://www.youtube.com/watch?v=example
+                    strMusicBrainzID: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+        '400':
+          description: Parámetros de búsqueda inválidos (s o t faltantes)
+
+  # 3. AcousticBrainz — Datos de audio de bajo nivel
+  /api/v1/{mbid}/low-level:
+    get:
+      tags:
+        - AcousticBrainz
+      summary: Obtener datos de audio de bajo nivel por MBID
+      security: []
+      description: >
+        Devuelve BPM (detectado por análisis de audio) y clave/tonalidad musical
+        para un recording identificado por su MusicBrainz ID (MBID).
+        El MBID se obtiene previamente desde TheAudioDB (strMusicBrainzID)
+        o desde MusicBrainz como fallback. El servicio enrichFromAcousticBrainz
+        redondea el BPM a entero y combina key_key + key_scale como key del sampler.
+      operationId: getLowLevel
+      parameters:
+        - name: mbid
+          in: path
+          required: true
+          description: MusicBrainz ID (UUID) del recording
+          schema:
+            type: string
+            format: uuid
+          example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+      responses:
+        '200':
+          description: Datos de audio de bajo nivel del recording
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcousticBrainzLowLevel'
+              example:
+                rhythm:
+                  bpm: 100.5
+                tonal:
+                  key_key: C#
+                  key_scale: minor
+        '404':
+          description: No se encontraron datos de audio para ese MBID (el servicio lo ignora sin romper el flujo)

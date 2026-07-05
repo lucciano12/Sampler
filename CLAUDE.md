@@ -53,6 +53,31 @@ key:         AcousticBrainz (único que lo tiene con precisión)
 plataformas: merge union (se suman los links de todas las APIs)
 _mbid:       TheAudioDB (uso interno, no se muestra en UI)
 
+### Roles de cada API
+- Discogs: búsqueda base, portada, género, estilo, enlace (requiere DISCOGS_KEY en header Authorization)
+- TheAudioDB: fallback de título/artista/portada, mood, link YouTube, aporta strMusicBrainzID
+- AcousticBrainz: BPM exacto y key/tonalidad usando el MBID que trajo TheAudioDB
+- MusicBrainz: paso intermedio para resolver MBID cuando TheAudioDB no lo devuelve
+
+### Regla de prioridad de campos — mergeConPrioridad()
+Patrón waterfall: cada campo se llena con la primera fuente que lo tenga.
+titulo/artista:  mock ?? Discogs ?? AudioDB
+portada:         mock ?? Discogs ?? AudioDB
+genero:          mock ?? Discogs ?? AudioDB ?? AcousticBrainz
+estilo:          mock ?? Discogs ?? AudioDB ?? AcousticBrainz
+tempo (BPM):     mock ?? AcousticBrainz ?? AudioDB
+key:             mock ?? AcousticBrainz (formato corto: "Am", "C", "F#m")
+plataformas:     union de todas las APIs (no se pisan, se suman)
+_mbid:           TheAudioDB → uso interno, no se muestra en UI
+
+### Límites de API
+- Discogs: per_page=10 (límite conservador para evitar rate limit 429)
+- Debounce de búsqueda: 600ms, mínimo 3 caracteres para disparar request
+
+### Documentación de APIs
+docs/openapi.yaml documenta las 3 APIs externas tal como el proyecto las consume.
+Visualizar con: npm run docs (desde sampler-app/)
+
 ## Environments
 Las variables de entorno se generan automáticamente desde .env
 por el script generate-env.js. No hardcodear keys en el código.

@@ -31,11 +31,11 @@ export class AcousticBrainzService {
             if (bpm && isFinite(bpm) && bpm > 0) resultado.tempo = Math.round(bpm);
             const keyKey   = acb?.tonal?.key_key;
             const keyScale = acb?.tonal?.key_scale;
-            if (keyKey && keyScale) resultado.key = `${keyKey} ${keyScale}`;
+            if (keyKey && keyScale) resultado.key = keyScale === 'minor' ? `${keyKey}m` : keyKey;
             return resultado;
           }),
           catchError((err) => {
-            if (err.status !== 404) console.warn('[DEBUG ERROR AcousticBrainz]', artista, titulo, err.status, err.message);
+            if (err.status !== 404) console.warn('[ERROR AcousticBrainz]', artista, titulo, err.status);
             return of({});
           })
         );

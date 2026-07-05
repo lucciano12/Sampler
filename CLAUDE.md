@@ -29,6 +29,19 @@ SamplerService orquesta 3 APIs con forkJoin y prioridad de campos:
 - TheAudioDB: enriquece título, artista, mood, portada, link YouTube y aporta strMusicBrainzID
 - AcousticBrainz: BPM exacto y key/tonalidad usando el MBID que trajo TheAudioDB
 
+### Qué aporta cada API
+- Discogs: título, artista, portada, género, estilo, enlace
+- TheAudioDB: fallback de título/artista/portada, mood, link YouTube, y strMusicBrainzID (mbid)
+- AcousticBrainz: BPM y key/tonalidad exactos, usando el mbid que trajo TheAudioDB
+
+### Regla de prioridad de campos — mergeConPrioridad()
+Cada campo se llena con la primera fuente que lo tenga (patrón waterfall):
+titulo/artista/portada:  Discogs ?? AudioDB
+genero/estilo:           Discogs ?? AudioDB ?? AcousticBrainz
+tempo (BPM) / key:       solo AcousticBrainz los tiene con precisión
+plataformas:             se suman (union), no se pisan
+_mbid:                   viene de TheAudioDB, uso interno (no se muestra en UI)
+
 ### Regla de merge — mergeConPrioridad()
 titulo:      Discogs ?? AudioDB
 artista:     Discogs ?? AudioDB
@@ -53,6 +66,12 @@ docs/openapi.yaml documenta las 3 APIs externas tal como el proyecto las consume
 Se visualiza con: npm run docs (desde sampler-app/)
 
 ## Estructura clave
+sampler-app/src/app/
+  services/sampler.ts          ← servicio principal (forkJoin + mergeConPrioridad)
+  models/api-responses.ts      ← interfaces de respuesta de las 3 APIs externas
+  components/lista-samplers/   ← componente principal
+docs/openapi.yaml               ← contratos de integración con APIs externas
+
 sampler-app/src/app/
   services/sampler.ts          ← servicio principal con forkJoin y mergeConPrioridad
   models/api-responses.ts      ← interfaces de respuesta de las 3 APIs externas

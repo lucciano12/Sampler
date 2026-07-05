@@ -26,9 +26,16 @@ export class DiscogsService {
   });
   constructor(private http: HttpClient) {}
 
-  // Devuelve hasta 25 releases de Discogs para un estilo dado, mapeados a Sampler
-  buscarPorEstilo(estilo: string): Observable<Sampler[]> {
-    const url = `${this.baseUrl}?style=${encodeURIComponent(estilo)}&type=release&per_page=25`;
+  // Busca releases en Discogs por estilo, opcionalmente filtradas por query de texto
+  buscarPorEstilo(estilo: string, query?: string): Observable<Sampler[]> {
+    let url: string;
+    if (query?.trim()) {
+      // Búsqueda combinada: query + estilo → resultados más precisos
+      url = `${this.baseUrl}?q=${encodeURIComponent(query)}&style=${encodeURIComponent(estilo)}&type=release&per_page=50`;
+    } else {
+      // Solo por estilo (comportamiento original)
+      url = `${this.baseUrl}?style=${encodeURIComponent(estilo)}&type=release&per_page=50`;
+    }
     return this.http.get<DiscogsResponse>(url, { headers: this.headers }).pipe(
       map(res => (res.results ?? []).map(r => {
         const parts = (r.title ?? '').split(' - ');
@@ -59,26 +66,20 @@ export class DiscogsService {
 
     return this.http.get<DiscogsResponse>(url, { headers: this.headers }).pipe(
       map((res) => {
-        console.log('[DEBUG RAW Discogs]', artista, titulo, res);
         const primer = res.results?.[0];
         if (!primer) return {};
 
         const resultado: Partial<Sampler> = {};
 
         if (primer.cover_image) resultado.portada = primer.cover_image;
-        if (primer.style?.length) resultado.estilo = primer.style[0];
+        if (primer.genre?.length)  resultado.genero  = primer.genre[0];
+        if (primer.style?.length)  resultado.estilo  = primer.style[0];
 
         return resultado;
       }),
       // Si la API falla, devolvemos objeto vacío sin interrumpir el flujo
       catchError((err) => {
-        console.error(
-          '[DEBUG ERROR Discogs]',
-          artista,
-          titulo,
-          err.status,
-          err.message,
-        );
+        console.warn('[ERROR Discogs]', artista, titulo, err.status);
         return of({});
       }),
     );

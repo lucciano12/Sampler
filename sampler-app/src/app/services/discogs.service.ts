@@ -31,10 +31,10 @@ export class DiscogsService {
     let url: string;
     if (query?.trim()) {
       // Búsqueda combinada: query + estilo → resultados más precisos
-      url = `${this.baseUrl}?q=${encodeURIComponent(query)}&style=${encodeURIComponent(estilo)}&type=release&per_page=50`;
+      url = `${this.baseUrl}?q=${encodeURIComponent(query)}&style=${encodeURIComponent(estilo)}&type=release&per_page=10`;
     } else {
       // Solo por estilo (comportamiento original)
-      url = `${this.baseUrl}?style=${encodeURIComponent(estilo)}&type=release&per_page=50`;
+      url = `${this.baseUrl}?style=${encodeURIComponent(estilo)}&type=release&per_page=10`;
     }
     return this.http.get<DiscogsResponse>(url, { headers: this.headers }).pipe(
       map(res => (res.results ?? []).map(r => {

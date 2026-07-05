@@ -7,7 +7,8 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "docs": "npx @redocly/cli build-docs ../docs/openapi.yaml -o ../docs/index.html && start ../docs/index.html"
   },
   "prettier": {
     "overrides": [

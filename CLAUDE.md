@@ -1,10 +1,69 @@
-# Sampler 🎵
+# Sampler — Contexto para Claude Code
 
-Buscador y catálogo de **samples musicales** (muestras predilectas de canciones) construido con **Angular 20**. Este proyecto permite explorar, buscar y descubrir samplers enriquecidos con metadatos musicales (BPM, key, género, portada) provenientes de múltiples APIs externas.
+## Sobre Sampler
+Sampler es una aplicación web Angular 20 para buscar y descubrir samples musicales.
+Usa Bootstrap 5 dark theme (estilo Spotify), consume APIs externas (Discogs, TheAudioDB,
+AcousticBrainz) y corre 100% en frontend sin backend propio.
 
-> **⚠️ Arquitectura actual**: Todo el proyecto es **frontend puro** — corre completamente en el navegador, sin backend propio. Las APIs externas (Discogs, TheAudioDB, AcousticBrainz) se llaman directamente desde Angular vía HttpClient.
->
-> **🔮 A futuro**: Está contemplado agregar un backend real en Node.js con base de datos (MongoDB, PostgreSQL) para manejar autenticación, persistencia de favoritos, comentarios propios y lógica del lado servidor. Ver [Roadmap](#-roadmap-del-readme-principal).
+## ⚠️ Arquitectura actual: frontend puro
+Todo corre en el navegador. No hay base de datos, ni servidor, ni API propia.
+Las APIs externas se llaman directamente desde Angular vía HttpClient.
+A futuro se contempla agregar un backend real en Node.js con MongoDB o PostgreSQL.
+
+## Tu rol
+- Ayudás a mejorar, debuggear y mantener el proyecto
+- El código y comentarios van en español
+- La UI es dark theme (verde #1ed760 sobre fondo oscuro #191414)
+- Si surge una idea que requiera backend, mencioná que por ahora es frontend-only
+  y que el backend futuro se planea en Node.js
+
+## Arquitectura de APIs — Discogs > TheAudioDB > AcousticBrainz
+SamplerService orquesta 3 APIs con forkJoin y prioridad de campos:
+- Si Discogs tiene el dato, AudioDB y AcousticBrainz no lo pisan
+- Si Discogs no lo tiene, AudioDB lo completa
+- Si ninguna lo tiene, AcousticBrainz lo aporta (solo campos técnicos: BPM, key)
+- Cada API tiene su propio catchError que devuelve [] o null — nunca rompen el catálogo
+
+### Roles de cada API
+- Discogs: búsqueda base, portada, género, estilo (requiere DISCOGS_KEY, header Authorization)
+- TheAudioDB: enriquece título, artista, mood, portada, link YouTube y aporta strMusicBrainzID
+- AcousticBrainz: BPM exacto y key/tonalidad usando el MBID que trajo TheAudioDB
+
+### Regla de merge — mergeConPrioridad()
+titulo:      Discogs ?? AudioDB
+artista:     Discogs ?? AudioDB
+portada:     Discogs ?? AudioDB
+genero:      Discogs ?? AudioDB ?? AcousticBrainz
+estilo:      Discogs ?? AudioDB ?? AcousticBrainz
+tempo/BPM:   AcousticBrainz (único que lo tiene con precisión)
+key:         AcousticBrainz (único que lo tiene con precisión)
+plataformas: merge union (se suman los links de todas las APIs)
+_mbid:       TheAudioDB (uso interno, no se muestra en UI)
+
+## Environments
+Las variables de entorno se generan automáticamente desde .env
+por el script generate-env.js. No hardcodear keys en el código.
+
+Variables requeridas en .env:
+- DISCOGS_KEY
+
+## Documentación de APIs
+docs/openapi.yaml documenta las 3 APIs externas tal como el proyecto las consume
+(contratos de integración, no endpoints propios).
+Se visualiza con: npm run docs (desde sampler-app/)
+
+## Estructura clave
+sampler-app/src/app/
+  services/sampler.ts          ← servicio principal con forkJoin y mergeConPrioridad
+  models/api-responses.ts      ← interfaces de respuesta de las 3 APIs externas
+  components/lista-samplers/   ← componente principal (grid + offcanvas + búsqueda)
+assets/mock/samplers.json      ← fallback offline / datos de desarrollo
+docs/openapi.yaml              ← contratos de integración con APIs externas
+
+## Formato de respuesta
+- Respuestas en español
+- Incluí rutas de archivos cuando referencies código
+- Sé didáctico pero técnico
 
 ---
 
@@ -61,6 +120,9 @@ sampler/                          ← Raíz del repositorio
     │   │       ├── audiodb.service.ts       ← TheAudioDB API
     │   │       └── acousticbrainz.service.ts ← AcousticBrainz + MusicBrainz
     │   │
+    │   │   └── models/
+    │   │       └── api-responses.ts          ← Interfaces de las 3 APIs externas
+    │   │
     │   ├── assets/mock/
     │   │   └── samplers.json       ← Datos mock (2 samplers de ejemplo)
     │   │
@@ -73,9 +135,9 @@ sampler/                          ← Raíz del repositorio
     │       ├── variables.scss       ← Variables SCSS (override Bootstrap)
     │       └── background.scss      ← Gradiente de fondo
     │
-    ├── scripts/
-    │   └── generate-env.js          ← Genera environment.ts desde .env
-    │
+    ├── generate-env.js              ← Genera environment.ts desde .env / process.env
+    ├── vercel.json                 ← Config de deploy (buildCommand, outputDirectory)
+    ├── .nvmrc                      ← Node 22
     ├── angular.json
     ├── tsconfig.json
     ├── tsconfig.app.json
@@ -104,12 +166,13 @@ sampler/                          ← Raíz del repositorio
 - **Tipo**: Standalone component, implementa `OnInit`
 - **Dependencias**: `SamplerService`, `FormControl`, `DomSanitizer`, `Offcanvas` (Bootstrap JS)
 - **Formularios reactivos**:
-  - `q: FormControl<string>` — búsqueda por texto (debounce 200ms)
-  - `estiloCtrl: FormControl<string>` — estilo musical para búsqueda en Discogs
-- **Estados visuales**: `loading`, `errorMsg`, `filtered.length === 0`
+  - `q: FormControl<string>` — búsqueda por texto (debounce 400ms con `switchMap` que cancela la búsqueda anterior)
+  - `fuente: FormControl<string>` — filtro por fuente (YouTube, Spotify, etc.)
+- **Estados visuales**: `loading`, `error`, sin resultados
 - **Funcionalidades**:
   - Grid responsivo de cards con portadas
-  - Offcanvas de detalle con 3 tabs (Plataformas, Info/Metadatos, Comentarios)
+  - Búsqueda en tiempo real con `switchMap` (cancela request previo si el usuario sigue escribiendo)
+  - Offcanvas de detalle con tabs (Plataformas, Info/Metadatos, Comentarios)
   - Modal de zoom para portadas
   - Tap tempo (cálculo manual de BPM)
   - Embed de YouTube (búsqueda pública sin API key)
@@ -174,7 +237,7 @@ Todas las APIs externas tienen **manejo de errores resiliente**: si una falla, l
 | `DISCOGS_KEY` | Token de API de Discogs | ✅ Sí | `discogs.service.ts` (Authorization header) |
 
 ### Generación automática
-El script [scripts/generate-env.js](sampler-app/scripts/generate-env.js) lee `DISCOGS_KEY` del archivo `.env` o de `process.env` (Vercel) y genera:
+El script [generate-env.js](sampler-app/generate-env.js) lee `DISCOGS_KEY` del archivo `.env` (local, vía dotenv) o de `process.env` (Vercel/CI) y genera:
 - `src/environments/environment.ts` (development)
 - `src/environments/environment.prod.ts` (production)
 
@@ -272,14 +335,4 @@ getSampler() → assets/mock/samplers.json → enrichOne() por cada sampler → 
 - ⬜ Playlists/colecciones de samplers
 - ⬜ Estadísticas de búsqueda y trending
 - ⬜ Base de datos real (MongoDB, PostgreSQL)
-- ⬜ Backend API real (Node.js, Python)
-
----
-
-## 🔍 Notas para Claude
-
-- **Español**: Este proyecto está documentado principalmente en español (código fuente, comentarios, README). Mantener consistencia de idioma.
-- **Estilo musical**: Al trabajar con APIs de música, usar convenciones internacionales (BPM, keys como "Am", "Bm", géneros en inglés tipo "Funk", "Soul", "Jazz").
-- **Discogs**: Es la API principal para búsqueda — las otras son complementarias para enriquecer metadatos. Nunca deben bloquear si fallan.
-- **La UI es dark theme**: Colores inspirados en Spotify (verde `#1ed760` sobre fondo oscuro `#191414`).
-- **No hay backend propio**: Toda la lógica corre en el frontend Angular. Las APIs externas se llaman directamente desde el navegador (con CORS).
+- ⬜ Backend API real en Node.js

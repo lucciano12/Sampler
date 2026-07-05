@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core'; // Importamos los decoradores
 import { SamplerService, Sampler } from '../../services/sampler'; // Importamos el servicio Sampler y la interfaz Sampler
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { debounceTime } from 'rxjs';
+import { debounceTime, filter } from 'rxjs';
 import { Offcanvas } from 'bootstrap';
 import { CommonModule } from '@angular/common';
 
@@ -57,9 +57,13 @@ export class ListaSamplers implements OnInit {
   ) {} //Inyectamos el servicio Sampler y DomSanitizer en el constructor
 
   ngOnInit() {
+    // Debounce de 600ms + mínimo 3 caracteres para no saturar la API de Discogs (rate limit 429)
     this.q.valueChanges
-      .pipe(debounceTime(200))
-      .subscribe(() => this.applyFilters());
+      .pipe(
+        debounceTime(600),
+        filter(term => term.trim().length === 0 || term.trim().length >= 3),
+      )
+      .subscribe(() => this.buscar());
     this.buscar();
   }
 
@@ -80,13 +84,15 @@ export class ListaSamplers implements OnInit {
 
   buscar(): void {
     const estilo = this.estiloCtrl.value.trim() || 'Funk';
+    // Si hay texto en q, se envía como query para combinar con el estilo en Discogs
+    const query = this.q.value.trim() || undefined;
     this.loading = true;
     this.errorMsg = '';
-    this.q.setValue('', { emitEvent: false });
-    this.samplerService.buscarPorEstilo(estilo).subscribe({
+    this.samplerService.buscarPorEstilo(estilo, query).subscribe({
       next: (samplers) => {
         this.samplers = samplers;
-        this.filtered = samplers;
+        // applyFilters() como filtro adicional con scoring local sobre los resultados de la API
+        this.applyFilters();
         this.loading = false;
       },
       error: (e) => {

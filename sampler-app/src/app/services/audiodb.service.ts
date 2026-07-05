@@ -8,6 +8,7 @@ import { Sampler } from './sampler';
 interface AudioDbTrack {
   intBPM: string | null;
   strGenre: string | null;
+  strMood: string | null;
 }
 interface AudioDbResponse {
   track: AudioDbTrack[] | null;
@@ -26,7 +27,6 @@ export class AudioDbService {
 
     return this.http.get<AudioDbResponse>(url).pipe(
       map(res => {
-        console.log('[DEBUG RAW AudioDB]', artista, titulo, res);
         const track = res.track?.[0];
         if (!track) return {};
 
@@ -39,10 +39,13 @@ export class AudioDbService {
         // Solo asignamos genero si viene con valor
         if (track.strGenre) resultado.genero = track.strGenre;
 
+        // Mood como estilo
+        if (track.strMood) resultado.estilo = track.strMood;
+
         return resultado;
       }),
       // Si la API falla, devolvemos objeto vacío sin interrumpir el flujo
-      catchError(err => { console.error('[DEBUG ERROR AudioDB]', artista, titulo, err.status, err.message); return of({}); })
+      catchError(err => { console.warn('[ERROR AudioDB]', artista, titulo, err.status); return of({}); })
     );
   }
 }

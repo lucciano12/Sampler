@@ -46,24 +46,14 @@ export class SamplerService {
       acoustic: this.acoustic.enrichFromAcousticBrainz(s.artista, s.titulo),
       disc:     this.discogs.enrichFromDiscogs(s.artista, s.titulo),
     }).pipe(
-      map(({ audio, acoustic, disc }) => {
-        const enriched: Sampler = {
-          ...s,
-          tempo:   s.tempo   ?? acoustic.tempo ?? audio.tempo,
-          key:     s.key     ?? acoustic.key,
-          genero:  s.genero  ?? audio.genero,
-          portada: s.portada ?? disc.portada,
-          estilo:  s.estilo  ?? disc.estilo,
-        };
-        console.log('[DEBUG enrichOne]', s.titulo, {
-          portada_mock: s.portada,
-          portada_disc: disc.portada,
-          portada_final: enriched.portada,
-          tempo_final: enriched.tempo,
-          genero_final: enriched.genero,
-        });
-        return enriched;
-      })
+      map(({ audio, acoustic, disc }) => ({
+        ...s,
+        genero:  s.genero  ?? disc.genero  ?? audio.genero,
+        estilo:  s.estilo  ?? disc.estilo  ?? audio.estilo,
+        tempo:   s.tempo   ?? acoustic.tempo ?? audio.tempo,
+        key:     s.key     ?? acoustic.key,
+        portada: s.portada ?? disc.portada,
+      }))
     );
   }
 
@@ -75,9 +65,9 @@ export class SamplerService {
     );
   }
 
-  // Busca releases en Discogs por estilo y los enriquece con BPM y Key
-  buscarPorEstilo(estilo: string): Observable<Sampler[]> {
-    return this.discogs.buscarPorEstilo(estilo).pipe(
+  // Busca releases en Discogs por estilo (y opcionalmente query) y los enriquece con BPM y Key
+  buscarPorEstilo(estilo: string, query?: string): Observable<Sampler[]> {
+    return this.discogs.buscarPorEstilo(estilo, query).pipe(
       switchMap(samplers => {
         if (!samplers.length) return of([]);
         return forkJoin(samplers.map(s => this.enrichOne(s)));

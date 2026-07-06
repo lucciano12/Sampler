@@ -14,64 +14,166 @@
     </div>
   </div>
 
-  <!-- FILTROS -->
+  <!-- NAVEGACIÓN: Catálogo / Mis Favoritos -->
   <div class="container-fluid px-4">
-    <div class="filter-section">
-      <i class="bi bi-vinyl icon-sampler"></i>
-
-      <input type="text" class="filter-input transparent" placeholder="Buscar por título, artista, fuente"
-        [formControl]="q" autocomplete="off">
-
-      <input type="text" class="filter-input transparent" placeholder="Escribe un estilo: Funk, Soul, Jazz..."
-        [formControl]="estiloCtrl" autocomplete="off" (keyup.enter)="buscar()">
-
-      <button class="btn btn-outline-light btn-sm" (click)="buscar()">
-        <i class="bi bi-search"></i>
+    <div class="nav-tabs-favoritos">
+      <button class="tab-btn" [class.active]="vistaActual === 'catalogo'" (click)="cambiarVista('catalogo')">
+        <i class="bi bi-collection"></i> Catálogo
+      </button>
+      <button class="tab-btn" [class.active]="vistaActual === 'favoritos'" (click)="cambiarVista('favoritos')">
+        <i class="bi bi-heart"></i> Mis Favoritos
+        <span class="badge-fav">{{ favoritosService.totalFavoritos() }}</span>
       </button>
     </div>
   </div>
 
-  <!-- ESTADO DE CARGA / ERROR -->
-  <div class="container-fluid px-4" *ngIf="loading || errorMsg || (filtered.length === 0 && !loading)">
-    <div *ngIf="loading" class="alert alert-secondary">Cargando…</div>
-    <div *ngIf="!loading && errorMsg" class="alert alert-danger">{{ errorMsg }}</div>
-    <div *ngIf="!loading && !errorMsg && filtered.length === 0" class="alert alert-warning">Sin resultados</div>
-  </div>
+  <!-- ─── VISTA CATÁLOGO ──────────────────────────────────────────── -->
+  @if (vistaActual === 'catalogo') {
 
+    <!-- FILTROS -->
+    <div class="container-fluid px-4">
+      <div class="filter-section">
+        <i class="bi bi-vinyl icon-sampler"></i>
 
-  <!-- Grid de Cards -->
-  <div *ngIf="!loading && !errorMsg" class="grid-container">
-    <div *ngFor="let s of filtered" class="card h-100 shadow-sm" (click)="abrirDetalle(s)" style="cursor: pointer;">
+        <input type="text" class="filter-input transparent" placeholder="Buscar por título, artista, fuente"
+          [formControl]="q" autocomplete="off">
 
-      <!-- Portada -->
-      <div class="card-image">
-        <img [src]="s.portada || 'assets/placeholder.png'" [alt]="s.titulo" loading="lazy"
-          onerror="this.src='https://placehold.co/400x400?text=No+Cover'">
+        <input type="text" class="filter-input transparent" placeholder="Escribe un estilo: Funk, Soul, Jazz..."
+          [formControl]="estiloCtrl" autocomplete="off" (keyup.enter)="buscar()">
 
-        <!-- NUEVO: Botón zoom (+) -->
-        <button class="zoom-btn" (click)="openZoomModal(s.portada, s.titulo); $event.stopPropagation()"
-          [attr.aria-label]="'Ampliar imagen: ' + s.titulo">
-          <i class="bi bi-plus-lg"></i>
+        <button class="btn btn-outline-light btn-sm" (click)="buscar()">
+          <i class="bi bi-search"></i>
         </button>
-
-        <span class="source-tag" [class]="s.fuente.toLowerCase()">
-          {{ s.fuente }}
-        </span>
-      </div>
-
-
-      <!-- Contenido Card -->
-      <div class="card-content">
-        <h3>{{ s.titulo }}</h3>
-        <p class="artist">{{ s.artista }}</p>
-        <p class="description">{{ s.descripcion }}</p>
-
-        <a href="#" class="btn-link" (click)="abrirDetalle(s); $event.preventDefault(); $event.stopPropagation()">
-          Ver Detalles
-        </a>
       </div>
     </div>
-  </div>
+
+    <!-- ESTADO DE CARGA / ERROR -->
+    <div class="container-fluid px-4" *ngIf="loading || errorMsg || (filtered.length === 0 && !loading)">
+      <div *ngIf="loading" class="alert alert-secondary">Cargando…</div>
+      <div *ngIf="!loading && errorMsg" class="alert alert-danger">{{ errorMsg }}</div>
+      <div *ngIf="!loading && !errorMsg && filtered.length === 0" class="alert alert-warning">Sin resultados</div>
+    </div>
+
+    <!-- Grid de Cards (catálogo) -->
+    <div *ngIf="!loading && !errorMsg" class="grid-container">
+      <div *ngFor="let s of filtered" class="card h-100 shadow-sm" (click)="abrirDetalle(s)" style="cursor: pointer;">
+
+        <!-- Portada -->
+        <div class="card-image">
+          <img [src]="s.portada || 'assets/placeholder.png'" [alt]="s.titulo" loading="lazy"
+            onerror="this.src='https://placehold.co/400x400?text=No+Cover'">
+
+          <!-- Botón zoom (+) -->
+          <button class="zoom-btn" (click)="openZoomModal(s.portada, s.titulo); $event.stopPropagation()"
+            [attr.aria-label]="'Ampliar imagen: ' + s.titulo">
+            <i class="bi bi-plus-lg"></i>
+          </button>
+
+          <!-- Botón favorito (corazón) -->
+          <button class="btn-favorito"
+            [class.activo]="esFavorito(s)"
+            (click)="toggleFavorito($event, s)"
+            [attr.aria-label]="esFavorito(s) ? 'Quitar de favoritos' : 'Agregar a favoritos'">
+            <i class="bi" [class.bi-heart-fill]="esFavorito(s)" [class.bi-heart]="!esFavorito(s)"></i>
+          </button>
+
+          <span class="source-tag" [class]="s.fuente.toLowerCase()">
+            {{ s.fuente }}
+          </span>
+        </div>
+
+        <!-- Contenido Card -->
+        <div class="card-content">
+          <h3>{{ s.titulo }}</h3>
+          <p class="artist">{{ s.artista }}</p>
+          <p class="description">{{ s.descripcion }}</p>
+
+          <a href="#" class="btn-link" (click)="abrirDetalle(s); $event.preventDefault(); $event.stopPropagation()">
+            Ver Detalles
+          </a>
+        </div>
+      </div>
+    </div>
+
+  } @else {
+
+    <!-- ─── VISTA FAVORITOS ────────────────────────────────────────── -->
+
+    <!-- Header + contador -->
+    <div class="container-fluid px-4">
+      <div class="favoritos-header">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-heart-fill" style="color: #ff4757; font-size: 1.5rem;"></i>
+          <h2 class="mb-0">Mis Favoritos</h2>
+          <span class="badge-fav ms-2 fs-6">{{ favoritosService.totalFavoritos() }}</span>
+        </div>
+        @if (favoritosService.totalFavoritos() > 0) {
+          <button class="btn btn-outline-danger btn-sm" (click)="limpiarFavoritos()">
+            <i class="bi bi-trash"></i> Limpiar
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Estado vacío -->
+    @if (favoritosService.favoritos().length === 0) {
+      <div class="container-fluid px-4">
+        <div class="empty-favoritos">
+          <i class="bi bi-heartbreak empty-icon"></i>
+          <p class="empty-text">No tenés favoritos todavía.</p>
+          <button class="btn btn-outline-light" (click)="cambiarVista('catalogo')">
+            <i class="bi bi-collection me-2"></i>Ir al catálogo
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- Grid de favoritos -->
+    @if (favoritosService.favoritos().length > 0) {
+      <div class="grid-container">
+        @for (s of favoritosService.favoritos(); track favoritosService.idUnico(s)) {
+          <div class="card h-100 shadow-sm" (click)="abrirDetalle(s)" style="cursor: pointer;">
+
+            <!-- Portada -->
+            <div class="card-image">
+              <img [src]="s.portada || 'assets/placeholder.png'" [alt]="s.titulo" loading="lazy"
+                onerror="this.src='https://placehold.co/400x400?text=No+Cover'">
+
+              <!-- Botón zoom (+) -->
+              <button class="zoom-btn" (click)="openZoomModal(s.portada, s.titulo); $event.stopPropagation()"
+                [attr.aria-label]="'Ampliar imagen: ' + s.titulo">
+                <i class="bi bi-plus-lg"></i>
+              </button>
+
+              <!-- Botón favorito (corazón) -->
+              <button class="btn-favorito"
+                [class.activo]="esFavorito(s)"
+                (click)="toggleFavorito($event, s)"
+                [attr.aria-label]="esFavorito(s) ? 'Quitar de favoritos' : 'Agregar a favoritos'">
+                <i class="bi" [class.bi-heart-fill]="esFavorito(s)" [class.bi-heart]="!esFavorito(s)"></i>
+              </button>
+
+              <span class="source-tag" [class]="s.fuente.toLowerCase()">
+                {{ s.fuente }}
+              </span>
+            </div>
+
+            <!-- Contenido Card -->
+            <div class="card-content">
+              <h3>{{ s.titulo }}</h3>
+              <p class="artist">{{ s.artista }}</p>
+              <p class="description">{{ s.descripcion }}</p>
+
+              <a href="#" class="btn-link" (click)="abrirDetalle(s); $event.preventDefault(); $event.stopPropagation()">
+                Ver Detalles
+              </a>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+  }
 
   <!-- ZOOM MODAL -->
   <div class="zoom-backdrop" *ngIf="zoomModalOpen" (click)="closeZoomOnBackdropClick($event)">
@@ -118,7 +220,6 @@
         <!-- Tab: Plataformas -->
         <div class="tab-pane fade show active" id="tab-plataformas" role="tabpanel">
           <div class="list-group list-group-flush">
-            <!-- Si hay array de plataformas -->
             <ng-container *ngFor="let p of sampleSel?.plataformas">
               <a [href]="p.url" target="_blank"
                 class="list-group-item list-group-item-action list-group-item-dark d-flex justify-content-between align-items-center mb-2 rounded">
@@ -127,7 +228,6 @@
               </a>
             </ng-container>
 
-            <!-- Fallback si solo existe el enlace principal -->
             <div *ngIf="!sampleSel?.plataformas?.length && sampleSel?.enlace">
               <a [href]="sampleSel?.enlace" target="_blank"
                 class="list-group-item list-group-item-action list-group-item-dark d-flex justify-content-between align-items-center rounded">
@@ -136,7 +236,7 @@
             </div>
           </div>
 
-          <!-- YouTube embed (sin API key, usa búsqueda pública) -->
+          <!-- YouTube embed -->
           <div class="ratio ratio-16x9 mb-3">
             <iframe
               [src]="getYoutubeSearchUrl(sampleSel)"
@@ -178,7 +278,7 @@
 
           </dl>
 
-          <!-- Tap Tempo: aparece solo cuando no hay dato de tempo -->
+          <!-- Tap Tempo -->
           <div *ngIf="!sampleSel?.tempo" class="mt-3 border-top border-secondary pt-3">
             <p class="text-secondary small mb-2">Medí el tempo manualmente</p>
             <div class="d-flex align-items-center gap-3">
@@ -211,3 +311,4 @@
       </div>
     </div>
   </div>
+</div>

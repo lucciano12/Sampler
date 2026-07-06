@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core'; // Importamos los decoradores Component y OnInit de Angular
+import { Component, OnInit, inject } from '@angular/core'; // Importamos los decoradores Component y OnInit de Angular
 import { SamplerService, Sampler } from '../../services/sampler'; // Importamos el servicio Sampler y la interfaz Sampler
+import { FavoritosService } from '../../services/favoritos.service';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { debounceTime, filter } from 'rxjs';
@@ -50,6 +51,12 @@ export class ListaSamplers implements OnInit {
       this.closeZoomModal();
     }
   }
+
+  // Servicio de favoritos (signal-based, persiste en localStorage)
+  readonly favoritosService = inject(FavoritosService);
+
+  // Vista actual: catálogo (búsqueda por API) o favoritos (localStorage)
+  vistaActual: 'catalogo' | 'favoritos' = 'catalogo';
 
   constructor(
     private samplerService: SamplerService,
@@ -133,6 +140,31 @@ export class ListaSamplers implements OnInit {
   resetTap(): void {
     this.taps = [];
     this.bpmCalculado = null;
+  }
+
+  // ─── Favoritos ───────────────────────────────────────────────────
+
+  /** Alterna el estado de favorito de un sampler. Usa stopPropagation para no disparar el offcanvas. */
+  toggleFavorito(event: Event, sampler: Sampler): void {
+    event.stopPropagation();
+    this.favoritosService.toggleFavorito(sampler);
+  }
+
+  /** Consulta si un sampler está en favoritos */
+  esFavorito(sampler: Sampler): boolean {
+    return this.favoritosService.esFavorito(sampler);
+  }
+
+  /** Cambia entre la vista de catálogo y la de favoritos */
+  cambiarVista(vista: 'catalogo' | 'favoritos'): void {
+    this.vistaActual = vista;
+  }
+
+  /** Elimina todos los favoritos con confirmación del usuario */
+  limpiarFavoritos(): void {
+    if (confirm('¿Eliminar todos los favoritos?')) {
+      this.favoritosService.limpiarFavoritos();
+    }
   }
 }
 

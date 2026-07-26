@@ -1,0 +1,74 @@
+@import 'bootstrap/scss/bootstrap';
+
+//Variables
+$primary-color: #1ed760; // Spotify verde
+$secondary-color: #191414; // Spotify negro
+$accent-color: #ff006e; //Rosado vibrante
+$bg-gradient-start: #1a1a1a;
+$bg-gradient-end: #0d0d0d;
+
+//Base estilos
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+  background: linear-gradient(135deg, $bg-gradient-start 0%, $bg-gradient-end 100%);
+  background-attachment: fixed; //Fondo pegado al viewport
+  color: #fff;
+  min-height: 100vh;
+}
+
+//Container principal
+.container-fluid {
+  padding: 0;
+  min-height: 100vh;
+}
+
+//Eliminar margenes de bootstrap
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+}
+
+//Links
+a {
+  color: $primary-color;
+  text-decoration: none;
+
+  &:hover {
+    color: lighten($primary-color, 10%);
+  }
+}
+
+//Scrollbar global
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 5px;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+}
+
+//Focus states
+button:focus,
+input:focus,
+select:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(30, 215, 96, 0.3);
+}

@@ -5,13 +5,51 @@
       "artista": "Macha y El Bloque Depresivo Oficial",
       "fuente": "YouTube",
       "enlace": "https://www.youtube.com/watch?v=ZCr7hDnVbuI&list=RDZCr7hDnVbuI&start_radio=1",
-      "descripcion": "@SatoMoon11: 'Uno vuelve siempre, a los viejos sitios, donde amó la vida. Simplemente, no puede ser más cierto.'"
+      "descripcion": "Una cancion inolvidable que habla sobre la nostalgia y los recuerdos.",
+      "key": "Gm",
+      "plataformas": [
+        {
+          "nombre": "YouTube",
+          "tipo": "video",
+          "url": "https://www.youtube.com/watch?v=ZCr7hDnVbuI"
+        }
+      ],
+      "comentarios": [
+        {
+          "usuario": "@SatoMoon11",
+          "texto": "Uno vuelve siempre, a los viejos sitios, donde amó la vida..."
+        }
+      ]
     },
     {
       "titulo": "Violent Crimes",
       "artista": "Kanye West",
       "fuente": "Spotify",
-      "enlace": "https://open.spotify.com/intl-es/track/3s7MCdXyWmwjdcWh7GWXas?si=c744331685434d0a"
+      "enlace": "https://open.spotify.com/intl-es/track/3s7MCdXyWmwjdcWh7GWXas?si=c744331685434d0a",
+      "descripcion": "Una canción introspectiva sobre la paternidad y el crecimiento.",
+      "key": "Bm",
+      "plataformas": [
+        {
+          "nombre": "Spotify",
+          "tipo": "stream",
+          "url": "https://open.spotify.com/intl-es/track/3s7MCdXyWmwjdcWh7GWXas"
+        },
+        {
+          "nombre": "YouTube",
+          "tipo": "video",
+          "url": "https://www.youtube.com/watch?v=dTcyiwCbXSE&list=RDdTcyiwCbXSE&start_radio=1"
+        }
+      ],
+      "comentarios": [
+        {
+          "usuario": "@fan1",
+          "texto": "Gran atmósfera, cuerdas bonitas."
+        },
+        {
+          "usuario": "@fan2",
+          "texto": "Suena perfecto para un beat lento."
+        }
+      ]
     }
   ]
 }

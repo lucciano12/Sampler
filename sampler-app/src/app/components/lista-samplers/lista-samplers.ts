@@ -1,75 +1,138 @@
 import { Component, OnInit } from '@angular/core'; // Importamos los decoradores Component y OnInit de Angular
 import { SamplerService, Sampler } from '../../services/sampler'; // Importamos el servicio Sampler y la interfaz Sampler
-import { NgIf, NgFor } from '@angular/common'; // Importamos NgIf y NgFor para usar en la plantilla
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { debounceTime } from 'rxjs';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { debounceTime, filter } from 'rxjs';
+import { Offcanvas } from 'bootstrap';
+import { CommonModule } from '@angular/common';
 
 @Component({
+  //Quiere decir que esta clase es un componente de Angular
   selector: 'app-lista-samplers',
-  standalone: true, // Indicamos que este componente es independiente
-  imports: [NgIf, NgFor, ReactiveFormsModule], // Importamos NgIf y NgFor para usar en la plantilla
+  standalone: true,
+  imports: [ReactiveFormsModule, CommonModule],
   templateUrl: './lista-samplers.html',
-  styleUrl: './lista-samplers.scss'
+  styleUrl: './lista-samplers.scss',
 })
-export class ListaSamplers implements OnInit{ //El OnInit es un ciclo de vida de Angular que se ejecuta una vez que el componente ha sido inicializado
+export class ListaSamplers implements OnInit {
+  //El OnInit es un ciclo de vida de Angular que se ejecuta una vez que el componente ha sido inicializado
   samplers: Sampler[] = []; //Inicializamos un array de samplers
   filtered: Sampler[] = []; //Inicializamos un array de samplers filtrados
+  bpmCalculado: number | null = null; //Inicializamos una variable para el BPM calculado, que puede ser un número o null
+  private taps: number[] = []; //Inicializamos un array para almacenar los tiempos de los taps del usuario
 
-  //controles de busqueda y filtro por fuente
-   q = new FormControl<string>('', { nonNullable: true }); //Control de formulario para la búsqueda
-   fuente = new FormControl<string>('todas', { nonNullable: true }); //Control de formulario para el filtro por fuente
+  //controles de busqueda local y búsqueda por estilo en Discogs
+  q = new FormControl<string>('', { nonNullable: true });
+  estiloCtrl = new FormControl<string>('Funk', { nonNullable: true });
 
-   loading = false; //Indicador de carga
-   errorMsg = ''; //Mensaje de error
+  loading = false; //Indicador de carga
+  errorMsg = ''; //Mensaje de error
 
-  constructor(private samplerService: SamplerService) { } //Inyectamos el servicio Sampler en el constructor
+  // Zoom Modal
+  zoomModalOpen = false;
+  zoomImage: string | null = null;
+  zoomTitle: string | null = null;
 
-  ngOnInit() { //Método que se ejecuta al inicializar el componente, con el this llamamos a las propiedades y métodos de la clase
-    this.loading = true; //Indicamos que estamos cargando los datos
-    this.samplerService.getSampler().subscribe({
-      next: ({samplers}) => {
-        this.samplers = samplers; //Asignamos los samplers obtenidos del servicio al array de samplers
-        this.filtered = samplers; //Asignamos los samplers obtenidos del servicio al array de samplers filtrados
-        this.loading = false; //Indicamos que hemos terminado de cargar los datos
-      },
-      error: (e) => {  //Indicamos que ha habido un error al cargar los datos
-        this.errorMsg = 'No se han podido cargar los samples del mock'; //Asignamos el mensaje de error
-        this.loading = false; //Indicamos que hemos terminado de cargar los datos
-        console.error(e); //Mostramos el error en la consola
-      }
-    });
+  openZoomModal(imagen: string | undefined | null, titulo: string): void {
+    this.zoomImage = imagen || null;
+    this.zoomTitle = titulo;
+    this.zoomModalOpen = true;
+  }
 
-    //Reaccionamos a los cambios en el control de búsqueda
-    this.q.valueChanges.pipe(debounceTime(200)).subscribe(() => this.applyFilters());
-    this.fuente.valueChanges.subscribe(() => this.applyFilters());
-    
-  } //Fin del método ngOnInit
+  closeZoomModal(): void {
+    this.zoomModalOpen = false;
+    this.zoomImage = null;
+    this.zoomTitle = null;
+  }
 
-  private applyFilters() { //Método para aplicar los filtros de búsqueda y fuente
-    const term = normalize(this.q.value); //Normalizamos el término de búsqueda
-    const fuente = this.fuente.value; //Obtenemos el valor del control de fuente 'Todas' | 'YouTube' | 'Spotify'
-
-    //1) Filtramos por fuente si corresponde
-    let base = fuente === 'todas'
-      ? this.samplers //Si la fuente es 'todas', usamos todos los samplers (El ? significa "si")
-      : this.samplers.filter(s => s.fuente.toLowerCase() === fuente.toLowerCase()); //Si no, filtramos por la fuente seleccionada ( : significa "si no")
-
-    //2) Si no hay término de búsqueda, devolvemos la base filtrada por fuente
-    if (!term) {  // Si el término de búsqueda está vacío
-      this.filtered = base; //Asignamos la base filtrada por fuente al array de samplers filtrados
-      return; //Lo retornamos
+  closeZoomOnBackdropClick(event: MouseEvent): void {
+    if (event.target === event.currentTarget) {
+      this.closeZoomModal();
     }
+  }
 
-    //3) Filtrar por coincidencia en titulo, artista, fuente o descripción del sampler
-     this.filtered = base
-      .map(s => (
-        {
-         s, score: scoreSampler(s, term)  // El s es el sampler, y score es la puntuación de coincidencia
-        }
-      )) // calcular “relevancia”
-      .filter(x => x.score > 0)                         // descartar no coincidentes 
-      .sort((a, b) => b.score - a.score)               // ordenar por relevancia
-      .map(x => x.s);                                  // devolver solo el sampler
+  constructor(
+    private samplerService: SamplerService,
+    private sanitizer: DomSanitizer,
+  ) {} //Inyectamos el servicio Sampler y DomSanitizer en el constructor
+
+  ngOnInit() {
+    // Debounce de 600ms + mínimo 3 caracteres para no saturar la API de Discogs (rate limit 429)
+    this.q.valueChanges
+      .pipe(
+        debounceTime(600),
+        filter(term => term.trim().length === 0 || term.trim().length >= 3),
+      )
+      .subscribe(() => this.buscar());
+    this.buscar();
+  }
+
+  private applyFilters() {
+    const term = normalize(this.q.value);
+    if (!term) {
+      this.filtered = this.samplers;
+      return;
+    }
+    this.filtered = this.samplers
+      .map((s) => ({ s, score: scoreSampler(s, term) }))
+      .filter((x) => x.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .map((x) => x.s);
+  }
+
+  sampleSel: Sampler | null = null;
+
+  buscar(): void {
+    const estilo = this.estiloCtrl.value.trim() || 'Funk';
+    // Si hay texto en q, se envía como query para combinar con el estilo en Discogs
+    const query = this.q.value.trim() || undefined;
+    this.loading = true;
+    this.errorMsg = '';
+    this.samplerService.buscarPorEstilo(estilo, query).subscribe({
+      next: (samplers) => {
+        this.samplers = samplers;
+        // applyFilters() como filtro adicional con scoring local sobre los resultados de la API
+        this.applyFilters();
+        this.loading = false;
+      },
+      error: (e) => {
+        this.errorMsg = 'No se pudieron cargar resultados de Discogs';
+        this.loading = false;
+        console.error(e);
+      },
+    });
+  }
+
+  getYoutubeSearchUrl(s: Sampler | null): SafeResourceUrl | null {
+    if (!s) return null;
+    const q = encodeURIComponent(s.artista + ' ' + s.titulo);
+    const url = `https://www.youtube.com/embed?listType=search&list=${q}`;
+    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+  }
+
+  abrirDetalle(s: Sampler) {
+    this.sampleSel = s;
+    const el = document.getElementById('offcanvasDetalle');
+    if (!el) return;
+    const panel = Offcanvas.getOrCreateInstance(el);
+    panel.show();
+  }
+
+  registrarTap(): void {
+    this.taps.push(Date.now());
+    if (this.taps.length > 8) this.taps.shift(); // Mantenemos solo los últimos 8 taps para calcular el BPM
+    if (this.taps.length < 2) return;
+
+    const intervalos = this.taps.slice(1).map((t, i) => t - this.taps[i]);
+
+    const promedioMs =
+      intervalos.reduce((a, b) => a + b, 0) / intervalos.length;
+    this.bpmCalculado = Math.round(60000 / promedioMs);
+  }
+
+  resetTap(): void {
+    this.taps = [];
+    this.bpmCalculado = null;
   }
 }
 
@@ -83,7 +146,7 @@ function normalize(v: string | undefined | null): string {
 }
 
 /** Sencillo scoring por relevancia: título (3x), artista (2x), descripción/fuente (1x) */
-function scoreSampler(s: Sampler, term: string): number { 
+function scoreSampler(s: Sampler, term: string): number {
   const titulo = normalize(s.titulo);
   const artista = normalize(s.artista);
   const fuente = normalize(s.fuente);

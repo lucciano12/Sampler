@@ -16,6 +16,25 @@ import { CommonModule } from '@angular/common';
   styleUrl: './lista-samplers.scss',
 })
 export class ListaSamplers implements OnInit {
+  
+  getYoutubeEmbedUrl(s: Sampler | null): SafeResourceUrl | null {
+    if (!s) return null;
+    const ytPlataforma = s.plataformas?.find(p =>
+      p.url?.includes('youtube.com') || p.url?.includes('youtu.be')
+    );
+    const url = ytPlataforma?.url ?? s.enlace ?? '';
+    const videoId = this.extraerVideoId(url);
+    if (!videoId) return null;
+    return this.sanitizer.bypassSecurityTrustResourceUrl(
+      `https://www.youtube.com/embed/${videoId}`
+    );
+  }
+
+  getYoutubeSearchLink(s: Sampler | null): string {
+    if (!s) return 'https://www.youtube.com';
+    const q = encodeURIComponent(`${s.artista} ${s.titulo}`);
+    return `https://www.youtube.com/results?search_query=${q}`;
+  }
   //El OnInit es un ciclo de vida de Angular que se ejecuta una vez que el componente ha sido inicializado
   samplers: Sampler[] = []; //Inicializamos un array de samplers
   filtered: Sampler[] = []; //Inicializamos un array de samplers filtrados
@@ -68,7 +87,7 @@ export class ListaSamplers implements OnInit {
     this.q.valueChanges
       .pipe(
         debounceTime(600),
-        filter(term => term.trim().length === 0 || term.trim().length >= 3),
+        filter((term) => term.trim().length === 0 || term.trim().length >= 3),
       )
       .subscribe(() => this.buscar());
     this.buscar();
@@ -110,11 +129,18 @@ export class ListaSamplers implements OnInit {
     });
   }
 
-  getYoutubeSearchUrl(s: Sampler | null): SafeResourceUrl | null {
-    if (!s) return null;
-    const q = encodeURIComponent(s.artista + ' ' + s.titulo);
-    const url = `https://www.youtube.com/embed?listType=search&list=${q}`;
-    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+  private extraerVideoId(url: string): string | null {
+    if (!url) return null;
+    //Soporta: youtube.com/watch?v=ID, youtu.be/ID, youtube.com/embed/ID
+    const match = url.match(
+      /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/,
+    );
+    return match ? match[1] : null;
+  }
+
+  tieneYoutube(s: Sampler | null): boolean {
+    //Verifica si el sampler tiene un enlace de Youtube válido
+    return this.getYoutubeEmbedUrl(s) !== null;
   }
 
   abrirDetalle(s: Sampler) {

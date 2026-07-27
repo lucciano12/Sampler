@@ -236,14 +236,24 @@
             </div>
           </div>
 
-          <!-- YouTube embed -->
-          <div class="ratio ratio-16x9 mb-3">
-            <iframe
-              [src]="getYoutubeSearchUrl(sampleSel)"
-              frameborder="0"
-              allowfullscreen>
-            </iframe>
-          </div>
+          <!-- YouTube embed: si hay videoId, mostramos iframe; si no, link de búsqueda como fallback -->
+          @if (tieneYoutube(sampleSel)) {
+            <div class="ratio ratio-16x9 mb-3">
+              <iframe
+                [src]="getYoutubeEmbedUrl(sampleSel)"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen>
+              </iframe>
+            </div>
+          }
+          @if (!tieneYoutube(sampleSel)) {
+            <a [href]="getYoutubeSearchLink(sampleSel)"
+               target="_blank"
+               class="btn btn-outline-danger w-100 mb-3">
+              <i class="bi bi-youtube me-2"></i>Buscar en YouTube
+            </a>
+          }
         </div>
 
         <!-- Tab: Metadatos -->

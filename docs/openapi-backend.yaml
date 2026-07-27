@@ -1,0 +1,353 @@
+openapi: 3.0.3
+info:
+  title: Sampler Backend API
+  description: >
+    Endpoints propios del backend Node.js + Express (Fase 2).
+    El servidor actúa como proxy de las APIs externas (Discogs,
+    TheAudioDB, AcousticBrainz, YouTube) y gestiona favoritos
+    con persistencia en base de datos.
+
+    ⚠️ Este archivo documenta endpoints propios, no APIs de terceros.
+    Para los contratos de integración externa ver openapi.yaml.
+  version: 2.0.0
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:3000
+    description: Servidor de desarrollo local
+
+tags:
+  - name: Samplers
+    description: Búsqueda y enriquecimiento de samplers
+  - name: YouTube
+    description: Búsqueda de videoId vía YouTube Data API v3
+  - name: Favoritos
+    description: Persistencia de favoritos por usuario
+
+paths:
+  # ── GET /api/samplers ─────────────────────────────────────────────
+  /api/samplers:
+    get:
+      tags:
+        - Samplers
+      summary: Buscar samplers por estilo
+      description: >
+        Proxy a la API de Discogs. Recibe un estilo musical y opcionalmente
+        un query de texto, y retorna los resultados enriquecidos con datos
+        de TheAudioDB y AcousticBrainz.
+      parameters:
+        - name: estilo
+          in: query
+          required: true
+          schema:
+            type: string
+            example: Funk
+          description: Estilo musical a buscar en Discogs
+        - name: q
+          in: query
+          required: false
+          schema:
+            type: string
+            example: James Brown
+          description: Texto adicional para refinar la búsqueda
+      responses:
+        '200':
+          description: Lista de samplers encontrados
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Sampler'
+        '429':
+          description: Rate limit de Discogs excedido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '502':
+          description: Error al comunicarse con las APIs externas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ── GET /api/samplers/enrich ───────────────────────────────────────
+  /api/samplers/enrich:
+    get:
+      tags:
+        - Samplers
+      summary: Enriquecer un sampler con datos externos
+      description: >
+        Ejecuta forkJoin sobre Discogs, TheAudioDB y AcousticBrainz
+        para un artista + título dados, aplicando mergeConPrioridad().
+      parameters:
+        - name: artista
+          in: query
+          required: true
+          schema:
+            type: string
+            example: Daft Punk
+          description: Nombre del artista
+        - name: titulo
+          in: query
+          required: true
+          schema:
+            type: string
+            example: One More Time
+          description: Título del track
+      responses:
+        '200':
+          description: Sampler enriquecido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sampler'
+        '404':
+          description: No se encontraron datos para el artista + título dados
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '502':
+          description: Error al comunicarse con las APIs externas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ── GET /api/youtube ───────────────────────────────────────────────
+  /api/youtube:
+    get:
+      tags:
+        - YouTube
+      summary: Buscar videoId en YouTube
+      description: >
+        Usa YouTube Data API v3 para buscar un video por artista + título
+        y retorna el videoId para embed (sin exponer la API key al frontend).
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+            example: Daft Punk One More Time
+          description: Query de búsqueda (artista + título)
+      responses:
+        '200':
+          description: VideoId encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  videoId:
+                    type: string
+                    example: dQw4w9WgXcQ
+                    description: ID del video de YouTube (11 caracteres)
+                  url:
+                    type: string
+                    format: uri
+                    example: https://www.youtube.com/watch?v=dQw4w9WgXcQ
+                  embedUrl:
+                    type: string
+                    format: uri
+                    example: https://www.youtube.com/embed/dQw4w9WgXcQ
+                  title:
+                    type: string
+                    example: Daft Punk — One More Time (Official Video)
+                required:
+                  - videoId
+                  - embedUrl
+        '404':
+          description: No se encontraron resultados en YouTube
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ── POST /api/favoritos ────────────────────────────────────────────
+  /api/favoritos:
+    post:
+      tags:
+        - Favoritos
+      summary: Guardar un favorito
+      description: >
+        Persiste un sampler como favorito del usuario en la base de datos.
+        Si ya existe, no lo duplica (upsert).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+                  example: user-abc-123
+                  description: ID del usuario
+                sampler:
+                  $ref: '#/components/schemas/Sampler'
+              required:
+                - userId
+                - sampler
+      responses:
+        '201':
+          description: Favorito guardado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: fav-xyz-789
+                    description: ID del documento creado
+                  userId:
+                    type: string
+                    example: user-abc-123
+                  sampler:
+                    $ref: '#/components/schemas/Sampler'
+                  createdAt:
+                    type: string
+                    format: date-time
+                    example: '2026-07-27T15:30:00Z'
+                required:
+                  - id
+                  - userId
+                  - sampler
+        '400':
+          description: Body inválido o faltan campos requeridos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ── GET /api/favoritos/{userId} ────────────────────────────────────
+  /api/favoritos/{userId}:
+    get:
+      tags:
+        - Favoritos
+      summary: Obtener favoritos de un usuario
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: user-abc-123
+          description: ID del usuario
+      responses:
+        '200':
+          description: Lista de favoritos del usuario
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Favorito'
+
+# ── Schemas ───────────────────────────────────────────────────────────
+components:
+  schemas:
+    Sampler:
+      type: object
+      description: Representación unificada de un sample musical
+      properties:
+        titulo:
+          type: string
+          example: Superstition
+        artista:
+          type: string
+          example: Stevie Wonder
+        portada:
+          type: string
+          format: uri
+          example: https://i.discogs.com/cover.jpg
+          description: URL de la portada del álbum
+        genero:
+          type: string
+          example: Funk / Soul
+        estilo:
+          type: string
+          example: Funk
+        tempo:
+          type: number
+          example: 100.5
+          description: BPM de la canción
+        key:
+          type: string
+          example: E♭m
+          description: Tonalidad (formato corto, ej. Am, C, F#m)
+        descripcion:
+          type: string
+          example: Clásico del funk con línea de bajo icónica
+        fuente:
+          type: string
+          example: Discogs
+          description: API de origen de los datos principales
+        enlace:
+          type: string
+          format: uri
+          example: https://www.discogs.com/release/12345
+        plataformas:
+          type: array
+          items:
+            type: object
+            properties:
+              nombre:
+                type: string
+                example: YouTube
+              url:
+                type: string
+                format: uri
+              tipo:
+                type: string
+                example: video
+        comentarios:
+          type: array
+          items:
+            type: object
+            properties:
+              usuario:
+                type: string
+              texto:
+                type: string
+      required:
+        - titulo
+        - artista
+
+    Favorito:
+      type: object
+      properties:
+        id:
+          type: string
+          example: fav-xyz-789
+        userId:
+          type: string
+          example: user-abc-123
+        sampler:
+          $ref: '#/components/schemas/Sampler'
+        createdAt:
+          type: string
+          format: date-time
+          example: '2026-07-27T15:30:00Z'
+      required:
+        - id
+        - userId
+        - sampler
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Rate limit excedido
+        statusCode:
+          type: integer
+          example: 429
+      required:
+        - error
+        - statusCode

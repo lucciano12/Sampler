@@ -14,24 +14,94 @@ $accent-color: #ff006e;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   padding: 2rem 0;
   margin-bottom: 2rem;
+  margin-left: calc(-1 * var(--bs-gutter-x, 1.5rem));
+  margin-right: calc(-1 * var(--bs-gutter-x, 1.5rem));
   position: sticky;
   top: 0;
   z-index: 99;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 
-  .logo {
-    font-size: 2rem;
-    font-weight: 700;
-    color: $primary-color;
-    text-transform: uppercase;
-    letter-spacing: 2px;
+  .container-fluid {
+    width: 100%;
+    padding: 0 2rem;
   }
 
-  .search-container {
-    display: flex;
-    gap: 1rem;
+  .header-inner {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .header-left {
+    // espacio vacío para balancear el grid
+  }
+
+  .header-right {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    text-decoration: none;
+    cursor: default;
+
+    .logo-icon {
+      font-size: 1.8rem;
+      color: $primary-color;
+      animation: spin 8s linear infinite;
+    }
+
+    .logo-text {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: $text-primary;
+      letter-spacing: -0.5px;
+      line-height: 1;
+
+      .logo-lp {
+        color: $primary-color;
+      }
+    }
+  }
+
+  .navbar-search {
+    position: relative;
+    display: flex;
+    align-items: center;
+
+    .navbar-search-icon {
+      position: absolute;
+      left: 0.9rem;
+      color: $text-secondary;
+      font-size: 0.9rem;
+      pointer-events: none;
+    }
+
+    .navbar-search-input {
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 20px;
+      padding: 0.5rem 1.2rem 0.5rem 2.4rem;
+      color: $text-primary;
+      font-size: 0.9rem;
+      width: 220px;
+      transition: all 0.3s ease;
+
+      &::placeholder { color: $text-secondary; }
+
+      &:focus {
+        outline: none;
+        width: 280px;
+        background: rgba(255, 255, 255, 0.11);
+        border-color: $primary-color;
+        box-shadow: 0 0 0 3px rgba(30, 215, 96, 0.15);
+      }
+    }
   }
 }
 
@@ -465,14 +535,9 @@ h2 {
       font-size: 1.5rem;
     }
 
-    .search-container {
-      flex-direction: column;
-      width: 100%;
-    }
-
-    .search-input {
-      width: 100%;
-      min-width: unset;
+    .navbar-search .navbar-search-input {
+      width: 160px;
+      &:focus { width: 200px; }
     }
   }
 
@@ -910,4 +975,9 @@ aún pueden usar el tema del sistema operativo y no se pueden personalizar compl
     font-size: 1.1rem;
     margin-bottom: 1.5rem;
   }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }

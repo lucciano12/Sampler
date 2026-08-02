@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core'; // Importamos los decoradores Component y OnInit de Angular
+import { Component, OnInit, inject } from '@angular/core'; // Importamos los decoradores Component y OnInit de Angular
 import { SamplerService, Sampler } from '../../services/sampler'; // Importamos el servicio Sampler y la interfaz Sampler
+import { FavoritosService } from '../../services/favoritos.service';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { debounceTime, filter } from 'rxjs';
@@ -15,6 +16,25 @@ import { CommonModule } from '@angular/common';
   styleUrl: './lista-samplers.scss',
 })
 export class ListaSamplers implements OnInit {
+  
+  getYoutubeEmbedUrl(s: Sampler | null): SafeResourceUrl | null {
+    if (!s) return null;
+    const ytPlataforma = s.plataformas?.find(p =>
+      p.url?.includes('youtube.com') || p.url?.includes('youtu.be')
+    );
+    const url = ytPlataforma?.url ?? s.enlace ?? '';
+    const videoId = this.extraerVideoId(url);
+    if (!videoId) return null;
+    return this.sanitizer.bypassSecurityTrustResourceUrl(
+      `https://www.youtube.com/embed/${videoId}`
+    );
+  }
+
+  getYoutubeSearchLink(s: Sampler | null): string {
+    if (!s) return 'https://www.youtube.com';
+    const q = encodeURIComponent(`${s.artista} ${s.titulo}`);
+    return `https://www.youtube.com/results?search_query=${q}`;
+  }
   //El OnInit es un ciclo de vida de Angular que se ejecuta una vez que el componente ha sido inicializado
   samplers: Sampler[] = []; //Inicializamos un array de samplers
   filtered: Sampler[] = []; //Inicializamos un array de samplers filtrados
@@ -51,6 +71,12 @@ export class ListaSamplers implements OnInit {
     }
   }
 
+  // Servicio de favoritos (signal-based, persiste en localStorage)
+  readonly favoritosService = inject(FavoritosService);
+
+  // Vista actual: catálogo (búsqueda por API) o favoritos (localStorage)
+  vistaActual: 'catalogo' | 'favoritos' = 'catalogo';
+
   constructor(
     private samplerService: SamplerService,
     private sanitizer: DomSanitizer,
@@ -61,7 +87,7 @@ export class ListaSamplers implements OnInit {
     this.q.valueChanges
       .pipe(
         debounceTime(600),
-        filter(term => term.trim().length === 0 || term.trim().length >= 3),
+        filter((term) => term.trim().length === 0 || term.trim().length >= 3),
       )
       .subscribe(() => this.buscar());
     this.buscar();
@@ -103,11 +129,18 @@ export class ListaSamplers implements OnInit {
     });
   }
 
-  getYoutubeSearchUrl(s: Sampler | null): SafeResourceUrl | null {
-    if (!s) return null;
-    const q = encodeURIComponent(s.artista + ' ' + s.titulo);
-    const url = `https://www.youtube.com/embed?listType=search&list=${q}`;
-    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+  private extraerVideoId(url: string): string | null {
+    if (!url) return null;
+    //Soporta: youtube.com/watch?v=ID, youtu.be/ID, youtube.com/embed/ID
+    const match = url.match(
+      /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/,
+    );
+    return match ? match[1] : null;
+  }
+
+  tieneYoutube(s: Sampler | null): boolean {
+    //Verifica si el sampler tiene un enlace de Youtube válido
+    return this.getYoutubeEmbedUrl(s) !== null;
   }
 
   abrirDetalle(s: Sampler) {
@@ -133,6 +166,31 @@ export class ListaSamplers implements OnInit {
   resetTap(): void {
     this.taps = [];
     this.bpmCalculado = null;
+  }
+
+  // ─── Favoritos ───────────────────────────────────────────────────
+
+  /** Alterna el estado de favorito de un sampler. Usa stopPropagation para no disparar el offcanvas. */
+  toggleFavorito(event: Event, sampler: Sampler): void {
+    event.stopPropagation();
+    this.favoritosService.toggleFavorito(sampler);
+  }
+
+  /** Consulta si un sampler está en favoritos */
+  esFavorito(sampler: Sampler): boolean {
+    return this.favoritosService.esFavorito(sampler);
+  }
+
+  /** Cambia entre la vista de catálogo y la de favoritos */
+  cambiarVista(vista: 'catalogo' | 'favoritos'): void {
+    this.vistaActual = vista;
+  }
+
+  /** Elimina todos los favoritos con confirmación del usuario */
+  limpiarFavoritos(): void {
+    if (confirm('¿Eliminar todos los favoritos?')) {
+      this.favoritosService.limpiarFavoritos();
+    }
   }
 }
 

@@ -735,3 +735,179 @@ aún pueden usar el tema del sistema operativo y no se pueden personalizar compl
   background-color: $card-bg !important;
   color: $text-primary !important;
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// NAVEGACIÓN POR TABS: Catálogo / Mis Favoritos
+// ═══════════════════════════════════════════════════════════════════
+
+.nav-tabs-favoritos {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 0;
+
+  .tab-btn {
+    position: relative;
+    background: transparent;
+    border: none;
+    color: $text-secondary;
+    padding: 0.75rem 1.25rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    i {
+      font-size: 1rem;
+    }
+
+    &::after {
+      content: "";
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: transparent;
+      border-radius: 2px 2px 0 0;
+      transition: background 0.2s ease;
+    }
+
+    &:hover {
+      color: $text-primary;
+    }
+
+    &.active {
+      color: $primary-color;
+
+      &::after {
+        background: $primary-color;
+      }
+    }
+  }
+}
+
+.badge-fav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 11px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: $primary-color;
+  color: #000;
+  line-height: 1;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// BOTÓN FAVORITO (corazón en cards)
+// ═══════════════════════════════════════════════════════════════════
+
+.btn-favorito {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #999;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 10;
+  padding: 0;
+  opacity: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+
+  &:hover {
+    transform: scale(1.15);
+    color: #ff4757;
+    border-color: rgba(255, 71, 87, 0.4);
+    background: rgba(0, 0, 0, 0.7);
+  }
+
+  &.activo {
+    opacity: 1;
+    color: #ff4757;
+    background: rgba(255, 71, 87, 0.15);
+    border-color: rgba(255, 71, 87, 0.35);
+
+    i {
+      animation: pulse-heart 0.4s ease;
+    }
+  }
+
+  &:active {
+    transform: scale(0.9);
+  }
+}
+
+// El botón favorito se muestra al hacer hover sobre la card (o siempre si está activo)
+.card-image:hover .btn-favorito {
+  opacity: 1;
+}
+
+@keyframes pulse-heart {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.4);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// VISTA FAVORITOS
+// ═══════════════════════════════════════════════════════════════════
+
+.favoritos-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+
+  h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+  }
+}
+
+.empty-favoritos {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+
+  .empty-icon {
+    font-size: 4rem;
+    color: #555;
+    margin-bottom: 1rem;
+  }
+
+  .empty-text {
+    color: $text-secondary;
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+  }
+}

@@ -17,19 +17,15 @@
           </div>
         </div>
       </div>
-    </div>
-  </div>
-
-  <!-- NAVEGACIÓN: Catálogo / Mis Favoritos -->
-  <div class="container-fluid px-4">
-    <div class="nav-tabs-favoritos">
-      <button class="tab-btn" [class.active]="vistaActual === 'catalogo'" (click)="cambiarVista('catalogo')">
-        <i class="bi bi-collection"></i> Catálogo
-      </button>
-      <button class="tab-btn" [class.active]="vistaActual === 'favoritos'" (click)="cambiarVista('favoritos')">
-        <i class="bi bi-heart"></i> Mis Favoritos
-        <span class="badge-fav">{{ favoritosService.totalFavoritos() }}</span>
-      </button>
+      <div class="header-nav">
+        <button class="nav-tab-btn" [class.active]="vistaActual === 'catalogo'" (click)="cambiarVista('catalogo')">
+          <i class="bi bi-collection"></i> Catálogo
+        </button>
+        <button class="nav-tab-btn" [class.active]="vistaActual === 'favoritos'" (click)="cambiarVista('favoritos')">
+          <i class="bi bi-heart"></i> Mis Favoritos
+          <span class="badge-fav">{{ favoritosService.totalFavoritos() }}</span>
+        </button>
+      </div>
     </div>
   </div>
 
@@ -38,18 +34,27 @@
 
     <!-- FILTROS -->
     <div class="container-fluid px-4">
-      <div class="filter-section">
-        <i class="bi bi-vinyl icon-sampler"></i>
+      <div class="filter-bar">
+        <div class="filter-search-group">
+          <i class="bi bi-vinyl filter-icon"></i>
+          <input type="text"
+            class="filter-input transparent"
+            placeholder="Buscar por título, artista o fuente..."
+            [formControl]="q"
+            autocomplete="off">
+        </div>
 
-        <input type="text" class="filter-input transparent" placeholder="Buscar por título, artista, fuente"
-          [formControl]="q" autocomplete="off">
-
-        <input type="text" class="filter-input transparent" placeholder="Escribe un estilo: Funk, Soul, Jazz..."
-          [formControl]="estiloCtrl" autocomplete="off" (keyup.enter)="buscar()">
-
-        <button class="btn btn-outline-light btn-sm" (click)="buscar()">
-          <i class="bi bi-search"></i>
-        </button>
+        <div class="filter-style-group">
+          <input type="text"
+            class="filter-input transparent"
+            placeholder="Estilo: Funk, Soul, Jazz..."
+            [formControl]="estiloCtrl"
+            autocomplete="off"
+            (keyup.enter)="buscar()">
+          <button class="filter-search-btn" (click)="buscar()">
+            <i class="bi bi-search"></i>
+          </button>
+        </div>
       </div>
     </div>
 

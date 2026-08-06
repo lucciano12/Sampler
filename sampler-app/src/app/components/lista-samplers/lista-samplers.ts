@@ -16,25 +16,6 @@ import { CommonModule } from '@angular/common';
   styleUrl: './lista-samplers.scss',
 })
 export class ListaSamplers implements OnInit {
-  
-  getYoutubeEmbedUrl(s: Sampler | null): SafeResourceUrl | null {
-    if (!s) return null;
-    const ytPlataforma = s.plataformas?.find(p =>
-      p.url?.includes('youtube.com') || p.url?.includes('youtu.be')
-    );
-    const url = ytPlataforma?.url ?? s.enlace ?? '';
-    const videoId = this.extraerVideoId(url);
-    if (!videoId) return null;
-    return this.sanitizer.bypassSecurityTrustResourceUrl(
-      `https://www.youtube.com/embed/${videoId}`
-    );
-  }
-
-  getYoutubeSearchLink(s: Sampler | null): string {
-    if (!s) return 'https://www.youtube.com';
-    const q = encodeURIComponent(`${s.artista} ${s.titulo}`);
-    return `https://www.youtube.com/results?search_query=${q}`;
-  }
   //El OnInit es un ciclo de vida de Angular que se ejecuta una vez que el componente ha sido inicializado
   samplers: Sampler[] = []; //Inicializamos un array de samplers
   filtered: Sampler[] = []; //Inicializamos un array de samplers filtrados
@@ -138,8 +119,20 @@ export class ListaSamplers implements OnInit {
     return match ? match[1] : null;
   }
 
+  getYoutubeEmbedUrl(s: Sampler | null): SafeResourceUrl | null {
+    if (!s?.videoId) return null;
+    return this.sanitizer.bypassSecurityTrustResourceUrl(
+      `https://www.youtube.com/embed/${s.videoId}`
+    );
+  }
+
+  getYoutubeSearchLink(s: Sampler | null): string {
+    if (!s) return 'https://www.youtube.com';
+    const q = encodeURIComponent(`${s.artista} ${s.titulo}`);
+    return `https://www.youtube.com/results?search_query=${q}`;
+  }
+
   tieneYoutube(s: Sampler | null): boolean {
-    //Verifica si el sampler tiene un enlace de Youtube válido
     return this.getYoutubeEmbedUrl(s) !== null;
   }
 

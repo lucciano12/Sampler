@@ -6,7 +6,12 @@ const youtubeRouter = require('./routes/youtube');
 const app = express(); // Crea una instancia de la aplicación Express
 
 // Middlewares 
-app.use(cors({ origin: 'http://localhost:4200' }));
+app.use(cors({
+  origin: [
+    'http://localhost:4200',
+    'https://sampler-lp.vercel.app'
+  ]
+}));
 app.use(express.json());
 app.use('/api/', limiter);
 

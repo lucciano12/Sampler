@@ -36,6 +36,11 @@ function writeEnvironment(mode) {
   // Leer de process.env (Vercel, CI) — sin depender de dotenv ni .env
   const discogsKey = process.env.DISCOGS_KEY || '';
 
+  // URL del backend según el entorno
+  const apiUrl = isProd
+    ? 'https://sampler-024y.onrender.com'
+    : 'http://localhost:3000';
+
   const content = [
     '// Auto-generado por generate-env.js — no editar manualmente',
     `// Las variables vienen de process.env (Vercel Environment Variables)`,
@@ -43,6 +48,7 @@ function writeEnvironment(mode) {
     'export const environment = {',
     `  production: ${isProd},`,
     `  discogsKey: ${JSON.stringify(discogsKey)},`,
+    `  apiUrl: ${JSON.stringify(apiUrl)},`,
     '};',
     '',
   ].join('\n');

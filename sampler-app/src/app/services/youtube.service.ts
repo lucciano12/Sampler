@@ -2,10 +2,11 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' }) // Inyecta el servicio en la raíz de la aplicación, para que esté disponible en cualquier componente
 export class YoutubeService { // Define un servicio de Angular llamado YoutubeService
-  private backendUrl = 'http://localhost:3000/api/youtube'; 
+  private backendUrl = `${environment.apiUrl}/api/youtube`; 
 
   constructor(private http: HttpClient) {}
 

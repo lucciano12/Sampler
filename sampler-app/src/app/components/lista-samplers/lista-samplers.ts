@@ -1,6 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core'; // Importamos los decoradores Component y OnInit de Angular
 import { SamplerService, Sampler } from '../../services/sampler'; // Importamos el servicio Sampler y la interfaz Sampler
 import { FavoritosService } from '../../services/favoritos.service';
+import { YoutubeService } from '../../services/youtube.service';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { debounceTime, filter } from 'rxjs';
@@ -27,6 +28,7 @@ export class ListaSamplers implements OnInit {
   estiloCtrl = new FormControl<string>('Funk', { nonNullable: true });
 
   loading = false; //Indicador de carga
+  videoLoading = false; //Indicador de carga del video de YouTube (lazy)
   errorMsg = ''; //Mensaje de error
 
   // Zoom Modal
@@ -61,7 +63,8 @@ export class ListaSamplers implements OnInit {
   constructor(
     private samplerService: SamplerService,
     private sanitizer: DomSanitizer,
-  ) {} //Inyectamos el servicio Sampler y DomSanitizer en el constructor
+    private youtube: YoutubeService,
+  ) {} //Inyectamos el servicio Sampler, DomSanitizer y YoutubeService en el constructor
 
   ngOnInit() {
     // Debounce de 600ms + mínimo 3 caracteres para no saturar la API de Discogs (rate limit 429)
@@ -137,11 +140,32 @@ export class ListaSamplers implements OnInit {
   }
 
   abrirDetalle(s: Sampler) {
-    this.sampleSel = s;
+    // Resetea videoId y abre el offcanvas inmediatamente
+    this.sampleSel = { ...s, videoId: undefined };
+    this.videoLoading = true;
+
     const el = document.getElementById('offcanvasDetalle');
     if (!el) return;
     const panel = Offcanvas.getOrCreateInstance(el);
     panel.show();
+
+    // Carga lazy de YouTube: solo cuando el usuario abre este sample
+    this.youtube.getVideoId(s.artista, s.titulo).subscribe({
+      next: (videoId) => {
+        // Solo asigna si el usuario no cambió de sample mientras cargaba
+        if (
+          this.sampleSel &&
+          this.sampleSel.titulo === s.titulo &&
+          this.sampleSel.artista === s.artista
+        ) {
+          this.sampleSel = { ...this.sampleSel, videoId: videoId ?? undefined };
+        }
+        this.videoLoading = false;
+      },
+      error: () => {
+        this.videoLoading = false;
+      },
+    });
   }
 
   registrarTap(): void {

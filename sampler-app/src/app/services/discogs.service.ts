@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { Sampler } from './sampler';
@@ -19,24 +19,23 @@ interface DiscogsResponse {
 
 @Injectable({ providedIn: 'root' })
 export class DiscogsService {
-  private readonly baseUrl = 'https://api.discogs.com/database/search';
+  //Se define a donde va el request
+  private readonly baseUrl = `${environment.apiUrl}/api/discogs`;
 
-  private readonly headers = new HttpHeaders({
-    Authorization: `Discogs token=${environment.discogsKey}`,
-  });
   constructor(private http: HttpClient) {}
 
   // Busca releases en Discogs por estilo, opcionalmente filtradas por query de texto
+  //Se construye la URL completa y se dispara el request 
   buscarPorEstilo(estilo: string, query?: string): Observable<Sampler[]> {
     let url: string;
     if (query?.trim()) {
-      // Búsqueda combinada: query + estilo → resultados más precisos
-      url = `${this.baseUrl}?q=${encodeURIComponent(query)}&style=${encodeURIComponent(estilo)}&type=release&per_page=10`;
+      //Aca se construye la URL con query y estilo
+      url = `${this.baseUrl}/search?q=${encodeURIComponent(query)}&style=${encodeURIComponent(estilo)}&type=release&per_page=10`;
     } else {
-      // Solo por estilo (comportamiento original)
-      url = `${this.baseUrl}?style=${encodeURIComponent(estilo)}&type=release&per_page=10`;
+      //Aca se construye la URL solo con estilo
+      url = `${this.baseUrl}/search?style=${encodeURIComponent(estilo)}&type=release&per_page=10`;
     }
-    return this.http.get<DiscogsResponse>(url, { headers: this.headers }).pipe(
+    return this.http.get<DiscogsResponse>(url).pipe(
       map(res => (res.results ?? []).map(r => {
         const parts = (r.title ?? '').split(' - ');
         return {
@@ -61,10 +60,9 @@ export class DiscogsService {
     artista: string,
     titulo: string,
   ): Observable<Partial<Sampler>> {
-    const q = encodeURIComponent(`${artista} ${titulo}`);
-    const url = `${this.baseUrl}?q=${q}&type=release`;
+    const url = `${this.baseUrl}/enrich?artista=${encodeURIComponent(artista)}&titulo=${encodeURIComponent(titulo)}`;
 
-    return this.http.get<DiscogsResponse>(url, { headers: this.headers }).pipe(
+    return this.http.get<DiscogsResponse>(url).pipe(
       map((res) => {
         const primer = res.results?.[0];
         if (!primer) return {};

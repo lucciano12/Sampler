@@ -5,7 +5,6 @@ import { map, switchMap } from 'rxjs/operators';
 import { AudioDbService } from './audiodb.service';
 import { AcousticBrainzService } from './acousticbrainz.service';
 import { DiscogsService } from './discogs.service';
-import { YoutubeService } from './youtube.service';
 
 export interface Sampler {
   titulo: string;        // Título del sampler
@@ -39,7 +38,6 @@ export class SamplerService {
     private audioDb: AudioDbService,
     private acoustic: AcousticBrainzService,
     private discogs: DiscogsService,
-    private youtube: YoutubeService,
   ) {}
 
   // Enriquece un Sampler con las 3 APIs externas en paralelo
@@ -48,16 +46,14 @@ export class SamplerService {
       audio:    this.audioDb.enrichFromAudioDb(s.artista, s.titulo),
       acoustic: this.acoustic.enrichFromAcousticBrainz(s.artista, s.titulo),
       disc:     this.discogs.enrichFromDiscogs(s.artista, s.titulo),
-      videoId: this.youtube.getVideoId(s.artista, s.titulo)
     }).pipe(
-      map(({ audio, acoustic, disc, videoId }) => ({
+      map(({ audio, acoustic, disc }) => ({
         ...s,
         genero:  s.genero  ?? disc.genero  ?? audio.genero,
         estilo:  s.estilo  ?? disc.estilo  ?? audio.estilo,
         tempo:   s.tempo   ?? acoustic.tempo ?? audio.tempo,
         key:     s.key     ?? acoustic.key,
         portada: s.portada ?? disc.portada,
-        videoId: videoId ?? undefined,
       }))
     );
   }

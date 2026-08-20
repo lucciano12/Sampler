@@ -33,8 +33,11 @@ function writeEnvironment(mode) {
   const suffix = isProd ? 'prod' : '';
   const filePath = path.join(envDir, `environment${suffix ? '.' + suffix : ''}.ts`);
 
-  // Leer de process.env (Vercel, CI) — sin depender de dotenv ni .env
-  const discogsKey = process.env.DISCOGS_KEY || '';
+
+  // URL del backend según el entorno
+  const apiUrl = isProd
+    ? 'https://sampler-024y.onrender.com'
+    : 'http://localhost:3000';
 
   const content = [
     '// Auto-generado por generate-env.js — no editar manualmente',
@@ -42,7 +45,7 @@ function writeEnvironment(mode) {
     '',
     'export const environment = {',
     `  production: ${isProd},`,
-    `  discogsKey: ${JSON.stringify(discogsKey)},`,
+    `  apiUrl: ${JSON.stringify(apiUrl)},`,
     '};',
     '',
   ].join('\n');

@@ -247,8 +247,17 @@
             </div>
           </div>
 
-          <!-- YouTube embed: si hay videoId, mostramos iframe; si no, link de búsqueda como fallback -->
-          @if (tieneYoutube(sampleSel)) {
+          <!-- YouTube embed: carga lazy. Tres estados mutuamente excluyentes -->
+          <!-- Estado 1: cargando videoId desde el backend -->
+          @if (videoLoading) {
+            <div class="ratio ratio-16x9 mb-3 bg-dark d-flex align-items-center justify-content-center">
+              <div class="spinner-border text-success" role="status">
+                <span class="visually-hidden">Cargando video...</span>
+              </div>
+            </div>
+          }
+          <!-- Estado 2: videoId disponible, mostrar iframe -->
+          @if (!videoLoading && tieneYoutube(sampleSel)) {
             <div class="ratio ratio-16x9 mb-3">
               <iframe
                 [src]="getYoutubeEmbedUrl(sampleSel)"
@@ -258,7 +267,8 @@
               </iframe>
             </div>
           }
-          @if (!tieneYoutube(sampleSel)) {
+          <!-- Estado 3: sin videoId, mostrar botón de búsqueda -->
+          @if (!videoLoading && !tieneYoutube(sampleSel)) {
             <a [href]="getYoutubeSearchLink(sampleSel)"
                target="_blank"
                class="btn btn-outline-danger w-100 mb-3">

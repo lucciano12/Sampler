@@ -7,12 +7,13 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { debounceTime, filter } from 'rxjs';
 import { Offcanvas } from 'bootstrap';
 import { CommonModule } from '@angular/common';
+import { LazyImgDirective } from '../../directives/lazy-img.directive';
 
 @Component({
   //Quiere decir que esta clase es un componente de Angular
   selector: 'app-lista-samplers',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule],
+  imports: [ReactiveFormsModule, CommonModule, LazyImgDirective],
   templateUrl: './lista-samplers.html',
   styleUrl: './lista-samplers.scss',
 })

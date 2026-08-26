@@ -361,7 +361,21 @@ h2 {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      opacity: 0; // Arranca invisible; el directive agrega .img-cargada al terminar
+      transition:
+        transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+        opacity 0.5s ease;
+
+      &.img-cargada {
+        opacity: 1;
+      }
+    }
+
+    // Shimmer mientras la portada todavia no cargo
+    &:not(:has(img.img-cargada)) {
+      background: linear-gradient(90deg, #1c1c1c 25%, #2a2a2a 50%, #1c1c1c 75%);
+      background-size: 1200px 100%;
+      animation: shimmer 1.6s infinite linear;
     }
 
     /* .source-tag {
@@ -480,6 +494,16 @@ h2 {
         transform: translateX(2px);
       }
     }
+  }
+}
+
+// Shimmer de portadas cargando (lo usa .card-image)
+@keyframes shimmer {
+  0% {
+    background-position: -1200px 0;
+  }
+  100% {
+    background-position: 1200px 0;
   }
 }
 

@@ -27,6 +27,9 @@ export class ListaSamplers implements OnInit {
   //controles de busqueda local y búsqueda por estilo en Discogs
   q = new FormControl<string>('', { nonNullable: true });
   estiloCtrl = new FormControl<string>('Funk', { nonNullable: true });
+  bpmFiltro = new FormControl<number | null>(null); // Filtro de BPM (opcional)
+  tolerancia = new FormControl<number>(10, { nonNullable: true }); // Tolerancia de BPM (opcional)
+  keyFiltro = new FormControl<string>('', { nonNullable: true }); // Filtro de Key (opcional)
 
   loading = false; //Indicador de carga
   videoLoading = false; //Indicador de carga del video de YouTube (lazy)
@@ -61,6 +64,35 @@ export class ListaSamplers implements OnInit {
   // Vista actual: catálogo (búsqueda por API) o favoritos (localStorage)
   vistaActual: 'catalogo' | 'favoritos' = 'catalogo';
 
+  readonly KEYS: { label: string; value: string }[] = [
+    // Mayores
+    { label: 'C mayor', value: 'C' },
+    { label: 'C# mayor', value: 'C#' },
+    { label: 'D mayor', value: 'D' },
+    { label: 'D# mayor', value: 'D#' },
+    { label: 'E mayor', value: 'E' },
+    { label: 'F mayor', value: 'F' },
+    { label: 'F# mayor', value: 'F#' },
+    { label: 'G mayor', value: 'G' },
+    { label: 'G# mayor', value: 'G#' },
+    { label: 'A mayor', value: 'A' },
+    { label: 'A# mayor', value: 'A#' },
+    { label: 'B mayor', value: 'B' },
+    // Menores
+    { label: 'C menor', value: 'Cm' },
+    { label: 'C# menor', value: 'C#m' },
+    { label: 'D menor', value: 'Dm' },
+    { label: 'D# menor', value: 'D#m' },
+    { label: 'E menor', value: 'Em' },
+    { label: 'F menor', value: 'Fm' },
+    { label: 'F# menor', value: 'F#m' },
+    { label: 'G menor', value: 'Gm' },
+    { label: 'G# menor', value: 'G#m' },
+    { label: 'A menor', value: 'Am' },
+    { label: 'A# menor', value: 'A#m' },
+    { label: 'B menor', value: 'Bm' },
+  ];
+
   constructor(
     private samplerService: SamplerService,
     private sanitizer: DomSanitizer,
@@ -75,20 +107,54 @@ export class ListaSamplers implements OnInit {
         filter((term) => term.trim().length === 0 || term.trim().length >= 3),
       )
       .subscribe(() => this.buscar());
+    //Agregamos 3 subscriptions para que cada vez que cambie el valor de los filtros, se aplique el filtrado local
+    this.bpmFiltro.valueChanges.subscribe(() => this.applyFilters());
+    this.tolerancia.valueChanges
+      .pipe(debounceTime(300))
+      .subscribe(() => this.applyFilters());
+    this.keyFiltro.valueChanges.subscribe(() => this.applyFilters());
+
     this.buscar();
   }
 
   private applyFilters() {
     const term = normalize(this.q.value);
-    if (!term) {
-      this.filtered = this.samplers;
-      return;
+    const bpm = this.bpmFiltro.value;
+    const tol = this.tolerancia.value ?? 10;
+    const key = this.keyFiltro.value;
+
+    //Filtro de texto con scoring
+    let base: Sampler[];
+    if (term) {
+      base = this.samplers
+        .map((s) => ({ s, score: scoreSampler(s, term) }))
+        .filter((x) => x.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .map((x) => x.s);
+    } else {
+      base = [...this.samplers];
     }
-    this.filtered = this.samplers
-      .map((s) => ({ s, score: scoreSampler(s, term) }))
-      .filter((x) => x.score > 0)
-      .sort((a, b) => b.score - a.score)
-      .map((x) => x.s);
+
+    //Filtro de key
+    // Items con key diferente excluidos
+    // Items sin key van al final
+    if (key) {
+      const conKey = base.filter((s) => s.key === key);
+      const sinKey = base.filter((s) => !s.key);
+      base = [...conKey, ...sinKey];
+    }
+
+    //Filtro de BPM con tolerancia
+    if (bpm !== null) {
+      const conTempo = base.filter(
+        (s) => s.tempo != null && Math.abs(s.tempo - bpm) <= tol,
+      );
+      const sinTempo = base.filter((s) => s.tempo == null);
+      conTempo.sort((a, b) => (a.tempo ?? 0) - (b.tempo ?? 0));
+      base = [...conTempo, ...sinTempo];
+    }
+
+    this.filtered = base;
   }
 
   sampleSel: Sampler | null = null;
@@ -126,7 +192,7 @@ export class ListaSamplers implements OnInit {
   getYoutubeEmbedUrl(s: Sampler | null): SafeResourceUrl | null {
     if (!s?.videoId) return null;
     return this.sanitizer.bypassSecurityTrustResourceUrl(
-      `https://www.youtube.com/embed/${s.videoId}`
+      `https://www.youtube.com/embed/${s.videoId}`,
     );
   }
 
@@ -209,6 +275,25 @@ export class ListaSamplers implements OnInit {
     if (confirm('¿Eliminar todos los favoritos?')) {
       this.favoritosService.limpiarFavoritos();
     }
+  }
+
+  //Filtros avanzados.
+  get filtroBpmActivo(): boolean {
+    return this.bpmFiltro.value !== null;
+  }
+
+  get filtroKeyActivo(): boolean {
+    return !!this.keyFiltro.value;
+  }
+
+  get hayFiltrosActivos(): boolean {
+    return this.filtroBpmActivo || this.filtroKeyActivo;
+  }
+
+  limpiarFiltrosAvanzados(): void {
+    this.bpmFiltro.setValue(null);
+    this.tolerancia.setValue(10);
+    this.keyFiltro.setValue('');
   }
 }
 

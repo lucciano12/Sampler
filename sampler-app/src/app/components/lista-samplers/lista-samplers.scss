@@ -1089,3 +1089,57 @@ aún pueden usar el tema del sistema operativo y no se pueden personalizar compl
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
 }
+
+// ─── Filtros avanzados ────────────────────────────────────────────
+.filtros-avanzados {
+  .form-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #1ed760;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .input-dark {
+    background-color: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #fff;
+    border-radius: 8px;
+
+    &:focus {
+      background-color: rgba(255, 255, 255, 0.1);
+      border-color: #1ed760;
+      color: #fff;
+      box-shadow: 0 0 0 0.2rem rgba(30, 215, 96, 0.2);
+    }
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.35);
+    }
+  }
+
+  select.input-dark option {
+    background-color: #191414;
+    color: #fff;
+  }
+
+  .btn-outline-secondary {
+    border-color: rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.6);
+    border-radius: 8px;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.4);
+      color: #fff;
+    }
+  }
+}
+
+// ─── Badges BPM / Key en cards ───────────────────────────────────
+.card-meta .badge {
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+}

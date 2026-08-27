@@ -58,6 +58,53 @@
       </div>
     </div>
 
+    <!-- ─── Filtros avanzados ─────────────────────────── -->
+    <div class="container-fluid px-4">
+      <div class="filtros-avanzados mb-3">
+        <div class="row g-2 align-items-end">
+
+          <div class="col-auto">
+            <label class="form-label text-muted small mb-1">BPM</label>
+            <input type="number" class="form-control form-control-sm input-dark"
+              placeholder="ej: 120" [formControl]="bpmFiltro" min="40" max="300" />
+          </div>
+
+          <div class="col-auto" *ngIf="filtroBpmActivo">
+            <label class="form-label text-muted small mb-1">± BPM</label>
+            <input type="number" class="form-control form-control-sm input-dark"
+              [formControl]="tolerancia" min="1" max="50" style="width:70px" />
+          </div>
+
+          <div class="col-auto">
+            <label class="form-label text-muted small mb-1">Tonalidad</label>
+            <select class="form-select form-select-sm input-dark" [formControl]="keyFiltro">
+              <option value="">Todas</option>
+              <option *ngFor="let k of KEYS" [value]="k.value">{{ k.label }}</option>
+            </select>
+          </div>
+
+          <div class="col-auto" *ngIf="hayFiltrosActivos">
+            <button class="btn btn-sm btn-outline-secondary" (click)="limpiarFiltrosAvanzados()">
+              <i class="bi bi-x-circle"></i> Limpiar
+            </button>
+          </div>
+
+        </div>
+
+        <div class="mt-2" *ngIf="hayFiltrosActivos">
+          <span class="badge bg-success me-1" *ngIf="filtroBpmActivo">
+            {{ bpmFiltro.value }} BPM ± {{ tolerancia.value }}
+          </span>
+          <span class="badge bg-success me-2" *ngIf="filtroKeyActivo">
+            {{ keyFiltro.value }}
+          </span>
+          <span class="text-muted small">
+            {{ filtered.length }} resultado{{ filtered.length !== 1 ? 's' : '' }}
+          </span>
+        </div>
+      </div>
+    </div>
+
     <!-- ESTADO DE CARGA / ERROR -->
     <div class="container-fluid px-4" *ngIf="loading || errorMsg || (filtered.length === 0 && !loading)">
       <div *ngIf="loading" class="alert alert-secondary">Cargando…</div>
@@ -96,6 +143,20 @@
         <div class="card-content">
           <h3>{{ s.titulo }}</h3>
           <p class="artist">{{ s.artista }}</p>
+
+          <div class="card-meta mt-1">
+            <span *ngIf="s.tempo" class="badge bg-dark border border-secondary me-1">
+              {{ s.tempo }} BPM
+            </span>
+            <span *ngIf="s.key" class="badge bg-dark border border-secondary">
+              {{ s.key }}
+            </span>
+            <span *ngIf="hayFiltrosActivos && !s.tempo && !s.key"
+                  class="badge bg-secondary text-muted">
+              sin datos
+            </span>
+          </div>
+
           <p class="description">{{ s.descripcion }}</p>
 
           <a href="#" class="btn-link" (click)="abrirDetalle(s); $event.preventDefault(); $event.stopPropagation()">
@@ -171,6 +232,20 @@
             <div class="card-content">
               <h3>{{ s.titulo }}</h3>
               <p class="artist">{{ s.artista }}</p>
+
+              <div class="card-meta mt-1">
+                <span *ngIf="s.tempo" class="badge bg-dark border border-secondary me-1">
+                  {{ s.tempo }} BPM
+                </span>
+                <span *ngIf="s.key" class="badge bg-dark border border-secondary">
+                  {{ s.key }}
+                </span>
+                <span *ngIf="hayFiltrosActivos && !s.tempo && !s.key"
+                      class="badge bg-secondary text-muted">
+                  sin datos
+                </span>
+              </div>
+
               <p class="description">{{ s.descripcion }}</p>
 
               <a href="#" class="btn-link" (click)="abrirDetalle(s); $event.preventDefault(); $event.stopPropagation()">

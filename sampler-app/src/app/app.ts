@@ -1,10 +1,10 @@
 import { Component, signal } from '@angular/core';
-import { ListaSamplers } from './components/lista-samplers/lista-samplers';
+import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-root',
   standalone: true, //Nos permite definir un componente independiente, para utilizar el bootstrapApplication
-  imports: [ListaSamplers],
+  imports: [RouterOutlet],
   templateUrl: './app.html',
   styleUrls: ['./app.scss']
 })
